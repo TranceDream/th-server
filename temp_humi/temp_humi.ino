@@ -1,9 +1,16 @@
 #include <Wire.h>
 #include <time.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <string.h>
 
 #define ADDRESS_AM2321 0x5C
 #define SDA_PIN A4
 #define SCL_PIN A5
+
+int cur_mon = 8;
+int cur_day = 31;
+int cur_hour = 17;
 
 byte fuctionCode = 0;
 byte dataLength = 0;
@@ -14,9 +21,11 @@ byte tempLow = 0;
 byte crcHigh = 0;
 byte crcLow = 0;
 
-int humidity = 0;
-int temperature = 0;
+float humidity = 0;
+float temperature = 0;
 unsigned int crcCode = 0;
+
+String file_cont;
 
 void setup() {
   // put your setup code here, to run once:
@@ -41,7 +50,7 @@ void loop() {
 
   delayMicroseconds(1500);
   
-  //3
+  //3 读取传感器数据
   Wire.requestFrom(ADDRESS_AM2321, 8);
   fuctionCode = Wire.read();
   dataLength = Wire.read();
@@ -52,18 +61,16 @@ void loop() {
   crcLow = Wire.read();
   crcHigh = Wire.read();
 
-  //4
-  humidity = (humiHigh<<8) | humiLow;
-  temperature = (tempHigh<<8) | tempLow;
-  crcCode = (crcHigh<<8) | crcLow;
+  //4 处理数据
+  temperature = ((float)((tempHigh << 8) | tempLow)) / 10;
+  humidity = ((float)((humiHigh << 8) | humiLow)) / 10;
+  crcCode = (crcHigh << 8) | crcLow;
 
-  Serial.print(temperature/10.0, 1);
-  Serial.println(" 摄氏度");
-  Serial.print(humidity/10.0, 1);
-  Serial.println(" \%RH");
+  //5 数据存入字符串，保留两位小数
+  file_cont = (String)temperature + "#" + (String)humidity;
 
   CheckCRC();
-  delay(400);
+  delay(4000);
 }
 
 void CheckCRC() {
@@ -84,14 +91,16 @@ void CheckCRC() {
     }
   }
   if(crc == crcCode){
-    Serial.println("当前温湿度：");
-    //char *wday[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    //time_t timep;
-    //struct tm *p;
-    //time(&timep);
-    //p = gmtime(&timep);
-    //Serial.printf("%d/%d/%d", (1900+p->tm_year), (1+p->tm_mon), p->tm_mday);
-    //Serial.printf("%s %d:%d:%d\n", wday[p->tm_wday], p->tm_hour, p->tm_min, p->tm_sec);
+    time_t now;
+    struct tm *tm_now;
+    time(&now); 
+    tm_now = gmtime(&now);
+    String mon = (tm_now->tm_mon + cur_mon) > 9 ? (String)(tm_now->tm_mon + cur_mon) : "0" + (String)(tm_now->tm_mon + cur_mon);
+    String day = (tm_now->tm_mday + cur_day) > 9 ? (String)(tm_now->tm_mday + cur_day - 1) : "0" + (String)(tm_now->tm_mon + cur_day - 1);
+    String hour = (tm_now->tm_hour + cur_hour) > 9 ? (String)(tm_now->tm_hour + cur_hour) : "0" + (String)(tm_now->tm_hour + cur_hour);
+    file_cont = mon + day + hour + "#" + file_cont;
+
+    Serial.println(file_cont);
   }
   else
     Serial.println("CRC Error");
