@@ -3,15 +3,17 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
+#include <FS.h>
+//#include <SPIFFS.h>
 
 #define ADDRESS_AM2321 0x5C
 #define SDA_PIN A4
 #define SCL_PIN A5
 
+//当前时间，手动输入
 int cur_mon = 8;
 int cur_day = 31;
 int cur_hour = 17;
-
 byte fuctionCode = 0;
 byte dataLength = 0;
 byte humiHigh = 0;
@@ -20,21 +22,39 @@ byte tempHigh = 0;
 byte tempLow = 0;
 byte crcHigh = 0;
 byte crcLow = 0;
-
+//温湿度，浮点数
 float humidity = 0;
 float temperature = 0;
 unsigned int crcCode = 0;
-
+//写入文件的字符串
 String file_cont;
+//文件位置
+String filename = "/data.txt";
 
 void setup() {
   // put your setup code here, to run once:
   Wire.begin();
   Serial.begin(115200);
+
+  //格式化SPIFFS
+  SPIFFS.format();
+  // 启动SPIFFS
+  if(SPIFFS.begin()){
+    Serial.println("SPIFFS Started.");
+  } else {
+    Serial.println("SPIFFS Failed to Start.");
+  }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  //读取AM2321测量的数据
+  read_AM2321();
+  //控制测数据的时间间隔，1000为1s
+  delay(10000);
+}
+
+void read_AM2321(){
   //1
   Wire.beginTransmission(ADDRESS_AM2321);
   Wire.endTransmission();
@@ -69,8 +89,8 @@ void loop() {
   //5 数据存入字符串，保留两位小数
   file_cont = (String)temperature + "#" + (String)humidity;
 
+  //6 检查数据是否有效
   CheckCRC();
-  delay(4000);
 }
 
 void CheckCRC() {
@@ -99,9 +119,32 @@ void CheckCRC() {
     String day = (tm_now->tm_mday + cur_day) > 9 ? (String)(tm_now->tm_mday + cur_day - 1) : "0" + (String)(tm_now->tm_mon + cur_day - 1);
     String hour = (tm_now->tm_hour + cur_hour) > 9 ? (String)(tm_now->tm_hour + cur_hour) : "0" + (String)(tm_now->tm_hour + cur_hour);
     file_cont = mon + day + hour + "#" + file_cont;
-
-    Serial.println(file_cont);
+    //Serial.println(file_cont);
+    //写入文件
+    write_file(file_cont);
+    read_file();
   }
   else
     Serial.println("CRC Error");
+}
+
+void write_file(String str){
+  String content = read_file();
+  File dataFile = SPIFFS.open(filename, "w");
+  dataFile.println(content + str);
+  dataFile.close();
+}
+
+String read_file(){
+  File dataFile = SPIFFS.open(filename, "r");
+  String content = "";
+  if (dataFile)
+  {
+    Serial.println("文件内容是：");
+    while (dataFile.available())
+      content = content + (char)dataFile.read();
+    Serial.println(content);
+  }
+  dataFile.close();
+  return content;
 }
