@@ -20,9 +20,8 @@ import {
 	FiSettings,
 } from 'react-icons/fi'
 
-function getCurrentPage() {
-	let router = useRouter()
-	switch (router.pathname) {
+function getCurrentPage(pathname) {
+	switch (pathname) {
 		case '/':
 			return 0
 			break
@@ -43,7 +42,8 @@ function getCurrentPage() {
 
 function Sidebar() {
 	// const [Page, setPage] = useState('0')
-	let page = getCurrentPage()
+	let router = useRouter()
+	let page = getCurrentPage(router.pathname)
 	return (
 		<Flex flexDir='column' justifyContent='space-between' h='100vh'>
 			<Flex flexDir='column' as='nav'>
@@ -60,7 +60,7 @@ function Sidebar() {
 					align='flex-start'
 					justifyContent='center'>
 					<Flex className='sidebar-items'>
-						<Link href='/'>
+						<Link href='C:/Users/tranced/Resources/selab/th-server/frontend/out/'>
 							<Icon
 								as={FiHome}
 								fontSize='2xl'
@@ -68,7 +68,9 @@ function Sidebar() {
 							/>
 						</Link>
 						<Link href='/' _hover={{ textDecor: 'none' }}>
-							<Text className={page == 0 ? 'active' : ''}>Home</Text>
+							<Text className={page == 0 ? 'active' : ''}>
+								Home
+							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
@@ -82,7 +84,9 @@ function Sidebar() {
 						<Link
 							href='/temperature'
 							_hover={{ textDecor: 'none' }}>
-							<Text className={page == 1 ? 'active' : ''}>Temperature</Text>
+							<Text className={page == 1 ? 'active' : ''}>
+								Temperature
+							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
@@ -94,7 +98,9 @@ function Sidebar() {
 							/>
 						</Link>
 						<Link href='/humidity' _hover={{ textDecor: 'none' }}>
-							<Text className={page == 2 ? 'active' : ''}>Humidity</Text>
+							<Text className={page == 2 ? 'active' : ''}>
+								Humidity
+							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
@@ -107,7 +113,9 @@ function Sidebar() {
 						</Link>
 						<Link _hover={{ textDecor: 'none' }}>
 							{/* TODO */}
-							<Text className={page == 3 ? 'active' : ''}>TODO</Text>
+							<Text className={page == 3 ? 'active' : ''}>
+								TODO
+							</Text>
 						</Link>
 					</Flex>
 				</Flex>

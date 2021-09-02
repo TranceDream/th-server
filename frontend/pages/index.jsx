@@ -15,8 +15,19 @@ import {
 import { FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import HomeChart from '../components/HomeChart'
 
-export default function Home() {
-	const [expand, changeExpand] = useState(false)
+export async function getStaticProps() {
+	const res = await fetch('http://localhost:9000/api/all')
+	const all = await res.json()
+
+	return {
+		props: {
+			all,
+		},
+	}
+}
+
+export default function Home({ all }) {
+	// const [expand, changeExpand] = useState(false)
 	return (
 		<>
 			<Heading fontWeight='bold' mb={4} letterSpacing='tight'>
@@ -24,10 +35,18 @@ export default function Home() {
 			</Heading>
 			<Flex flexDir='row' maxW='100%'>
 				<Flex flexDir='column' flex={1} mr={2}>
-					<HomeChart title='Temperature' type='T' value='37.8' />
+					<HomeChart
+						title='Temperature'
+						type='T'
+						value={all.data[0].temperature}
+					/>
 				</Flex>
 				<Flex flexDir='column' flex={1} ml={2}>
-					<HomeChart title='Humidity' type='H' value='55' />
+					<HomeChart
+						title='Humidity'
+						type='H'
+						value={all.data[0].humidity}
+					/>
 				</Flex>
 			</Flex>
 			<Flex justifyContent='space-between' mt={8}>
@@ -52,93 +71,40 @@ export default function Home() {
 							</Tr>
 						</Thead>
 						<Tbody>
-							<Tr>
-								<Td>2021/8/30</Td>
-								<Td>
-									<Flex display='inline-table'>
-										<Text fontWeight='bold'>888</Text>
-									</Flex>
-									&deg;C
-								</Td>
-								<Td>
-									<Flex display='inline-table'>
-										<Text fontWeight='bold'>20</Text>
-									</Flex>
-									%rh
-								</Td>
-							</Tr>
-							<Tr>
-								<Td>2021/8/31</Td>
-								<Td>
-									<Flex display='inline-table'>
-										<Text fontWeight='bold'>36.5</Text>
-									</Flex>
-									&deg;C
-								</Td>
-								<Td>
-									<Flex display='inline-table'>
-										<Text fontWeight='bold'>21</Text>
-									</Flex>
-									%rh
-								</Td>
-							</Tr>
-							<Tr>
-								<Td>2021/8/32</Td>
-								<Td>
-									<Flex display='inline-table'>
-										<Text fontWeight='bold'>37.25</Text>
-									</Flex>
-									&deg;C
-								</Td>
-								<Td>
-									<Flex display='inline-table'>
-										<Text fontWeight='bold'>55.5</Text>
-									</Flex>
-									%rh
-								</Td>
-							</Tr>
-							{expand == true && (
-								<>
-									<Tr>
-										<Td>2021/8/33</Td>
+							{all.data.map((element) => {
+								const elementDate = new Date(element.date)
+								return (
+									<Tr key={element._id}>
+										<Td>
+											{elementDate.getFullYear() +
+												'/' +
+												(elementDate.getMonth() + 1) +
+												'/' +
+												elementDate.getDate()}
+										</Td>
 										<Td>
 											<Flex display='inline-table'>
 												<Text fontWeight='bold'>
-													-9
+													{element.temperature}
 												</Text>
 											</Flex>
 											&deg;C
 										</Td>
 										<Td>
 											<Flex display='inline-table'>
-												<Text fontWeight='bold'>5</Text>
-											</Flex>
-											%rh
-										</Td>
-									</Tr>
-									<Tr>
-										<Td>2021/9/1</Td>
-										<Td>
-											<Flex display='inline-table'>
-												<Text fontWeight='bold'>9</Text>
-											</Flex>
-											&deg;C
-										</Td>
-										<Td>
-											<Flex display='inline-table'>
 												<Text fontWeight='bold'>
-													9.9
+													{element.humidity}
 												</Text>
 											</Flex>
 											%rh
 										</Td>
 									</Tr>
-								</>
-							)}
+								)
+							})}
 						</Tbody>
 					</Table>
 				</Flex>
-				<Flex align='center'>
+				{/* <Flex align='center'>
 					<Divider />
 					<IconButton
 						icon={
@@ -150,7 +116,7 @@ export default function Home() {
 						}}
 					/>
 					<Divider />
-				</Flex>
+				</Flex> */}
 			</Flex>
 		</>
 	)

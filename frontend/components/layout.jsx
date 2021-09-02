@@ -1,6 +1,6 @@
 import React from 'react'
 import { Flex } from '@chakra-ui/layout'
-import Sidebar from './Sidebar'
+import Sidebar from '../components/Sidebar'
 
 export default function Layout({ children }) {
 	return (
