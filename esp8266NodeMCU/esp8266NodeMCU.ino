@@ -36,7 +36,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //定义服务器 端口号80
 ESP8266WebServer server(80);
-temphumi TH;
+temphumi TH; //温湿度对象
+
+int second; //系统重置后的秒数
 
 //连接WIFI
 void connectWiFi(){
@@ -179,21 +181,20 @@ void parseWeatherJson(WiFiClient wc){
 
 void drawWeather(int temperature,String weather){
   Serial.println(temperature);
+  Serial.println(weather);
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(1.5);
-  display.drawBitmap(5,5,hans_dang,12,12,1);
-  display.drawBitmap(20,5,hans_qian,12,12,1);
-  display.drawBitmap(35,5,hans_wen,12,12,1);
-  display.drawBitmap(50,5,hans_du,12,12,1);
-  display.setCursor(65,5);
-  display.print(":");
-  display.print(temperature);
-  display.drawBitmap(5,20,hans_tian,12,12,1);
-  display.drawBitmap(20,20,hans_qi,12,12,1);
-  display.setCursor(35,20);
-  display.print(":");
+  if(weather.equals("Sunny")) display.drawBitmap(30,10,epd_bitmap_sunny,20,20,1);
+  else if(weather.equals("Clear")) {display.drawBitmap(30,10,epd_bitmap_clear,20,20,1);}
+  else if(weather.equals("Cloudy")) display.drawBitmap(30,10,epd_bitmap_cloudy,20,19,1);
+  else if(weather.equals("Overcast")) display.drawBitmap(30,10,epd_bitmap_overcast,20,20,1);
+  display.setCursor(35,35);
   display.print(weather);
+  display.setTextSize(2.5);
+  display.setCursor(60,15);
+  display.print(temperature);
+  display.drawBitmap(82,12,hans_sheshidu,20,20,1);
   display.display();
 }
 
@@ -206,9 +207,9 @@ void setup(void){
 }
 
 void loop(){
-  //WeatherRequest();
+  WeatherRequest();
   server.handleClient();
-  
+  //second = millis()/1000;
 }
 
 // 获取文件类型

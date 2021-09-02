@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type=“text/javascript” src="/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    data:  <span id="data">0</span>
+    <button id="getData" onclick="getTH()">click it</button>
+
+    <script>
+            function getTH(){
+                let url = "/getTH";
+                let opt = {
+                    method: 'GET'
+                }
+                fetch(url, opt).then(res => {
+                    res.text().then(data=>{
+                        document.getElementById("data").innerHTML=data;
+                    })
+                });
+                    
+                
+            }
+    </script>
+</body>
+</html>
