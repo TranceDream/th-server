@@ -4,8 +4,10 @@
 #include <ESP8266WebServer.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 #include <FS.h>
+#include "temphumi.h"
 #include "font.h"
 
 //以下为一些常量
@@ -13,10 +15,14 @@
 #define esp8266_pwd "tju1895"             //自身密码
 #define ssid1 "DESKTOP-OISTSQI 4858"      
 #define pwd1 "&D358f99"
+#define ssid2 "dyhsk"      
+#define pwd2 "dyh123456"
 #define SCREEN_WIDTH 128 // 设置OLED宽度,单位:像素
 #define SCREEN_HEIGHT 64 // 设置OLED高度,单位:像素
 #define OLED_RESET 3  //RES引脚
 
+HTTPClient http;
+const String TimeUrl = "http://quan.suning.com/getSysTime.do";
 const char* host = "api.seniverse.com";     // 将要连接的心知天气地址 
 const int httpPort = 80;                    // 将要连接的服务器端口     
 String reqUserKey = "SehIsBRZtDBmW7Wc2";   // 私钥
@@ -30,6 +36,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //定义服务器 端口号80
 ESP8266WebServer server(80);
+temphumi TH; //温湿度对象
+
+int second; //系统重置后的秒数
 
 //连接WIFI
 void connectWiFi(){
@@ -54,12 +63,17 @@ void connectWiFi(){
 
 //启动服务器
 void setupServer(){
-  server.on("/getRecord",getRecord); //获取温湿度记录
+  server.on("/getTH",getTH);//获取当前温湿度
+  server.on("/setLed",setLed); //控制LED
   server.onNotFound(handleRequest); //响应用户信息
   server.begin(); 
+  Serial.println("HTTP server started");
+  if(SPIFFS.begin()){
+    Serial.println("SPIFFS ON");
+  }
 }
-
 void handleRequest(){
+
   //获取资源url
   String url = server.uri();
   Serial.print("Requesting: ");
@@ -89,16 +103,39 @@ bool handleFile(String url){
   return false;
 }
 
-void getRecord(){
-  Serial.println("getRecord...");
-  File recordFile = SPIFFS.open("record.txt","r");
-  int i,j; String line;
-  for(i=0;i<120;i++){
-    line="";
-    for(j=0;j<17;j++){
-      line += recordFile.read();
+String getTime(){
+  WiFiClient client;
+  http.begin(client,TimeUrl);
+  int httpCode = http.GET();
+  if(httpCode>0){
+    Serial.printf("HTTPCODE: %d\n",httpCode);
+    if(httpCode == HTTP_CODE_OK){
+      String res = http.getString();
+      String timeString = res.substring(50,60);
+      return timeString;
     }
   }
+  else return "getTime ERROR!!!";
+}
+
+void getTH(){
+  Serial.println("getTH...");
+  String temhum = TH.read_AM2321();
+  int i = temhum.indexOf('-');
+  float tem = temhum.substring(0,i).toFloat();
+  float hum = temhum.substring(i+1,temhum.length()).toFloat();
+  String t = getTime();
+  DynamicJsonDocument doc(96);
+  doc["temperature"] = tem;
+  doc["humidity"] = hum;
+  doc["time"] = t;
+  String THjson;
+  serializeJson(doc,THjson);
+  server.send(200,"application/json",THjson);
+}
+
+void setLed(){
+  
 }
 
 void WeatherRequest(){
@@ -139,30 +176,31 @@ void parseWeatherJson(WiFiClient wc){
   int results_0_now_code_int = results_0_now["code"].as<int>(); 
   int results_0_now_temperature_int = results_0_now["temperature"].as<int>(); 
   String results_0_last_update_str = results_0["last_update"].as<String>(); 
-  drawWeather(results_0_now_temperature_int);
+  drawWeather(results_0_now_temperature_int,results_0_now_text_str);
 }
 
-void drawWeather(int temperature){
+void drawWeather(int temperature,String weather){
   Serial.println(temperature);
+  Serial.println(weather);
   display.clearDisplay();
   display.setTextColor(WHITE);
-  display.setTextSize(2);
-  display.drawBitmap(5,5,hans_dang,12,12,1);
-  display.drawBitmap(20,5,hans_qian,12,12,1);
-  display.drawBitmap(35,5,hans_wen,12,12,1);
-  display.drawBitmap(50,5,hans_du,12,12,1);
-  display.setCursor(65,5);
-  display.print(":");
+  display.setTextSize(1.5);
+  if(weather.equals("Sunny")) display.drawBitmap(30,10,epd_bitmap_sunny,20,20,1);
+  else if(weather.equals("Clear")) {display.drawBitmap(30,10,epd_bitmap_clear,20,20,1);}
+  else if(weather.equals("Cloudy")) display.drawBitmap(30,10,epd_bitmap_cloudy,20,19,1);
+  else if(weather.equals("Overcast")) display.drawBitmap(30,10,epd_bitmap_overcast,20,20,1);
+  display.setCursor(35,35);
+  display.print(weather);
+  display.setTextSize(2.5);
+  display.setCursor(60,15);
   display.print(temperature);
-
+  display.drawBitmap(82,12,hans_sheshidu,20,20,1);
   display.display();
-  delay(2000);
 }
 
 void setup(void){
   Serial.begin(115200);
   Serial.println("");
-  
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // 初始化OLED并设置其IIC地址为 0x3C
   connectWiFi();
   setupServer();
@@ -170,8 +208,8 @@ void setup(void){
 
 void loop(){
   WeatherRequest();
-  //server.handleClient();
-  
+  server.handleClient();
+  //second = millis()/1000;
 }
 
 // 获取文件类型
