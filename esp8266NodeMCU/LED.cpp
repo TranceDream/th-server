@@ -22,7 +22,7 @@ void LED::handleLED() {
   }
 }
 
-void LED::adjustLED(int brightness){
+void LED::adjustLed(int brightness){
   val = brightness;
   analogWrite(LED_PIN,val);
 }

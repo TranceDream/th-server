@@ -24,8 +24,8 @@
 
 HTTPClient http;
 unsigned long previousMillis = 0;
-unsigned long interval = 2000;
-unsigned long currentMillis;
+unsigned long interval = 1000*60*30;
+bool first = true;
 const String TimeUrl = "http://quan.suning.com/getSysTime.do";
 const char* host = "api.seniverse.com";     // 将要连接的心知天气地址 
 const int httpPort = 80;                    // 将要连接的服务器端口     
@@ -35,6 +35,18 @@ String reqUnit = "c";                      // 摄氏/华氏
 String reqRes = "/v3/weather/now.json?key=" + reqUserKey +
                   + "&location=" + reqLocation + 
                   "&language=en&unit=" +reqUnit;   //天气预报请求url
+String RoughHttp = String("GET ")+reqRes+" HTTP/1.1\r\n"+"HOST: "+host+"\r\n"+"Connection:close\r\n\r\n";
+
+
+String DetailReq = "/v3/weather/daily.json?key=" + reqUserKey +
+                  + "&location=" + reqLocation + "&language=en&unit=" +
+                  reqUnit + "&start=0&days=3";    //详细天气信息请求url
+String DetailHttp = String("GET ")+DetailReq+" HTTP/1.1\r\n"+"HOST: "+host+"\r\n"+"Connection:close\r\n\r\n";
+
+DynamicJsonDocument detailDoc(256);
+
+int roughTem;
+String weather;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -71,6 +83,7 @@ void setupServer(){
   server.on("/getTH",getTH);//获取当前温湿度
   server.on("/setLed",setLed); //开关LED
   server.on("/adjustLed",adjustLed);//调节LED亮度
+  server.on("/getWeather",getWeather);//返回天气信息
   server.onNotFound(handleRequest); //响应用户信息
   server.begin(); 
   Serial.println("HTTP server started");
@@ -145,13 +158,20 @@ void setLed(){
 }
 
 void adjustLed(){
-  int brightness = server.arg("brightness");
+  int brightness = server.arg("brightness").toInt();
   led.adjustLed(brightness);
 }
 
-void WeatherRequest(){
+void getWeather(){
+  WeatherRequest(DetailHttp);
+  String WeatherJson;
+  serializeJson(detailDoc,WeatherJson);
+  server.send(200,"application/json",WeatherJson);
+}
+
+void WeatherRequest(String httpRes){
   WiFiClient wc;
-  String httpRes = String("GET ")+reqRes+" HTTP/1.1\r\n"+"HOST: "+host+"\r\n"+"Connection:close\r\n\r\n";
+  //String httpRes = String("GET ")+reqRes+" HTTP/1.1\r\n"+"HOST: "+host+"\r\n"+"Connection:close\r\n\r\n";
   Serial.println("");
   delay(2000);
   if(wc.connect(host,80)){
@@ -163,14 +183,17 @@ void WeatherRequest(){
     if(wc.find("\r\n\r\n")){
       Serial.println("Skip Header");
     }
-    parseWeatherJson(wc);
+    if(httpRes.equals(RoughHttp))
+    parseRoughWeatherJson(wc);
+    else
+    parseDetailWeatherJson(wc);
   }else{
     Serial.println("Connection failed!!!");
   }
   wc.stop();
 }
 
-void parseWeatherJson(WiFiClient wc){
+void parseRoughWeatherJson(WiFiClient wc){
   const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 2*JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + 230;
   DynamicJsonDocument doc(capacity);
   
@@ -189,6 +212,91 @@ void parseWeatherJson(WiFiClient wc){
   int results_0_now_temperature_int = results_0_now["temperature"].as<int>(); 
   String results_0_last_update_str = results_0["last_update"].as<String>(); 
   drawWeather(results_0_now_temperature_int,results_0_now_text_str);
+}
+
+void parseDetailWeatherJson(WiFiClient wc){
+  const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + 3*JSON_OBJECT_SIZE(14) + 860;
+  
+  DynamicJsonDocument doc(capacity);
+  
+  deserializeJson(doc, wc);
+  
+  JsonObject results_0 = doc["results"][0];
+  
+  JsonArray results_0_daily = results_0["daily"];
+  
+  JsonObject results_0_daily_0 = results_0_daily[0];
+  const char* results_0_daily_0_date = results_0_daily_0["date"]; 
+  const char* results_0_daily_0_text_day = results_0_daily_0["text_day"]; 
+  const char* results_0_daily_0_code_day = results_0_daily_0["code_day"];
+  const char* results_0_daily_0_text_night = results_0_daily_0["text_night"]; 
+  const char* results_0_daily_0_code_night = results_0_daily_0["code_night"]; 
+  const char* results_0_daily_0_high = results_0_daily_0["high"];
+  const char* results_0_daily_0_low = results_0_daily_0["low"]; 
+  const char* results_0_daily_0_rainfall = results_0_daily_0["rainfall"];
+  const char* results_0_daily_0_precip = results_0_daily_0["precip"]; 
+  const char* results_0_daily_0_wind_direction = results_0_daily_0["wind_direction"]; 
+  const char* results_0_daily_0_wind_direction_degree = results_0_daily_0["wind_direction_degree"];
+  const char* results_0_daily_0_wind_speed = results_0_daily_0["wind_speed"];
+  const char* results_0_daily_0_wind_scale = results_0_daily_0["wind_scale"];
+  const char* results_0_daily_0_humidity = results_0_daily_0["humidity"];
+  
+  JsonObject results_0_daily_1 = results_0_daily[1];
+  const char* results_0_daily_1_date = results_0_daily_1["date"];
+  const char* results_0_daily_1_text_day = results_0_daily_1["text_day"];
+  const char* results_0_daily_1_code_day = results_0_daily_1["code_day"];
+  const char* results_0_daily_1_text_night = results_0_daily_1["text_night"]; 
+  const char* results_0_daily_1_code_night = results_0_daily_1["code_night"]; 
+  const char* results_0_daily_1_high = results_0_daily_1["high"];
+  const char* results_0_daily_1_low = results_0_daily_1["low"]; 
+  const char* results_0_daily_1_rainfall = results_0_daily_1["rainfall"]; 
+  const char* results_0_daily_1_precip = results_0_daily_1["precip"]; 
+  const char* results_0_daily_1_wind_direction = results_0_daily_1["wind_direction"];
+  const char* results_0_daily_1_wind_direction_degree = results_0_daily_1["wind_direction_degree"]; 
+  const char* results_0_daily_1_wind_speed = results_0_daily_1["wind_speed"];
+  const char* results_0_daily_1_wind_scale = results_0_daily_1["wind_scale"];
+  const char* results_0_daily_1_humidity = results_0_daily_1["humidity"]; 
+  
+  JsonObject results_0_daily_2 = results_0_daily[2];
+  const char* results_0_daily_2_date = results_0_daily_2["date"];
+  const char* results_0_daily_2_text_day = results_0_daily_2["text_day"];
+  const char* results_0_daily_2_code_day = results_0_daily_2["code_day"];
+  const char* results_0_daily_2_text_night = results_0_daily_2["text_night"];
+  const char* results_0_daily_2_code_night = results_0_daily_2["code_night"];
+  const char* results_0_daily_2_high = results_0_daily_2["high"]; 
+  const char* results_0_daily_2_low = results_0_daily_2["low"]; 
+  const char* results_0_daily_2_rainfall = results_0_daily_2["rainfall"];
+  const char* results_0_daily_2_precip = results_0_daily_2["precip"]; 
+  const char* results_0_daily_2_wind_direction = results_0_daily_2["wind_direction"]; 
+  const char* results_0_daily_2_wind_direction_degree = results_0_daily_2["wind_direction_degree"]; 
+  const char* results_0_daily_2_wind_speed = results_0_daily_2["wind_speed"];
+  const char* results_0_daily_2_wind_scale = results_0_daily_2["wind_scale"]; 
+  const char* results_0_daily_2_humidity = results_0_daily_2["humidity"]; 
+  
+  const char* results_0_last_update = results_0["last_update"]; 
+  
+  // 从以上信息中摘选几个通过串口监视器显示
+  String data = results_0_daily_0["date"].as<String>();
+  String day_weather = results_0_daily_0["text_day"].as<String>(); 
+  //int results_0_daily_0_code_day_int = results_0_daily_0["code_day"].as<int>(); 
+  String night_weather = results_0_daily_0["text_night"].as<String>(); 
+  //int results_0_daily_0_code_night_int = results_0_daily_0["code_night"].as<int>(); 
+  int highTem = results_0_daily_0["high"].as<int>();
+  int lowTem = results_0_daily_0["low"].as<int>();
+  String rainfall = results_0_daily_0["rainfall"].as<String>();
+  String wind_direction = results_0_daily_0["wind_direction"].as<String>();
+  int wind_speed = results_0_daily_0["wind_speed"].as<int>();
+  int humidity = results_0_daily_0["humidity"].as<int>();
+  //String results_0_last_update_str = results_0["last_update"].as<String>();
+  detailDoc["data"]=data;
+  detailDoc["day_weather"]=day_weather;
+  detailDoc["night_weather"]=night_weather;
+  detailDoc["highTem"]=highTem;
+  detailDoc["lowTem"]=lowTem;
+  detailDoc["rainfall"]=rainfall;
+  detailDoc["wind_direction"]=wind_direction;
+  detailDoc["wind_speed"]=wind_speed;
+  detailDoc["humidity"]=humidity;
 }
 
 void drawWeather(int temperature,String weather){
@@ -210,6 +318,14 @@ void drawWeather(int temperature,String weather){
   display.display();
 }
 
+void Draw(){
+  if((millis()-previousMillis>=interval)||first){
+    previousMillis = millis();
+    first = false;
+    WeatherRequest(RoughHttp);
+  }
+}
+
 void setup(void){
   Serial.begin(115200);
   Serial.println("");
@@ -221,11 +337,8 @@ void setup(void){
 
 void loop(){
   server.handleClient();
-  if(millis()-previousMillis>=interval){
-    previousMillis = millis();
-    WeatherRequest();
-  }
-  //second = millis()/1000;
+  TH.check_time();
+  Draw();
 }
 
 // 获取文件类型
