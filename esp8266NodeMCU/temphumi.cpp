@@ -7,6 +7,30 @@ temphumi::temphumi(){
 temphumi::~temphumi(){
 }
 
+void temphumi::th_setup(){
+  boolean timeflag = false;
+  while(!timeflag){
+    timeflag = get_time();
+  }
+  Serial.println("Get current time done.");
+  //格式化SPIFFS
+  //SPIFFS.format();
+  // 启动SPIFFS
+  if(SPIFFS.begin()){
+    Serial.println("SPIFFS Started.");
+  } else {
+    Serial.println("SPIFFS Failed to Start.");
+  }
+}
+
+void temphumi::check_time(){
+  String current_time = cur_time();
+    if(fileflag(current_time)){
+      read_AM2321();
+      CheckCRC(current_time);
+    }
+}
+
 String temphumi::read_AM2321(){
   //1
   Wire.beginTransmission(ADDRESS_AM2321);
@@ -43,7 +67,7 @@ String temphumi::read_AM2321(){
   return file_cont;
 }
 
-void temphumi::CheckCRC(){
+void temphumi::CheckCRC(String current_time){
   byte result[] = {fuctionCode, dataLength, humiHigh, humiLow, tempHigh, tempLow};
   unsigned int crc = 0xFFFF;
   int tmp = 0;
@@ -61,11 +85,12 @@ void temphumi::CheckCRC(){
     }
   }
   if(crc == crcCode){
-    String current_time = cur_time();
-    file_cont = current_time + "-" + file_cont;
+    //写入数据库
+    addToDB();
     //写入文件
+    file_cont = current_time + "-" + file_cont;
     write_file(file_cont);
-    read_file();
+    //read_file();
   }
   else
     Serial.println("CRC Error");  
@@ -111,12 +136,8 @@ String temphumi::read_file(){
 }
 
 boolean temphumi::get_time(){
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+  //WiFi.mode(WIFI_STA);
+  connectWiFi();
   GetUrl = "http://quan.suning.com/getSysTime.do";
   http.setTimeout(5000);
   http.begin(client,GetUrl);
@@ -139,4 +160,38 @@ boolean temphumi::get_time(){
   }
   http.end();
   delay(3000);
+}
+
+void temphumi::connectWiFi(){
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Connected to " + WiFi.SSID());
+}
+
+boolean temphumi::fileflag(String str){
+  if(str == timer)
+    return false;
+  else{
+    timer = str;
+    return true;  
+  }
+}
+
+void temphumi::addToDB(){
+  boolean DBflag = true;
+  connectWiFi();
+  while(DBflag){
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    client->setInsecure();
+    https.begin(*client,"https://th-server-backend-xgxx111-outlookcom.vercel.app/api/insert");
+    https.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    int httpCode = https.POST("temperature=" + (String)temperature +  "&humidity=" + (String)humidity);
+    if(httpCode == 200)
+      DBflag = false;
+    https.end();
+  }
+  Serial.println("Add data to DB Successfully.");
 }

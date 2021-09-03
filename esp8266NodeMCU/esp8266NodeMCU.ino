@@ -9,6 +9,7 @@
 #include <FS.h>
 #include "temphumi.h"
 #include "font.h"
+#include "LED.h"
 
 //以下为一些常量
 #define esp8266_ssid "esp8266_zwld"       //自身作为热点时的ssid
@@ -22,6 +23,9 @@
 #define OLED_RESET 3  //RES引脚
 
 HTTPClient http;
+unsigned long previousMillis = 0;
+unsigned long interval = 2000;
+unsigned long currentMillis;
 const String TimeUrl = "http://quan.suning.com/getSysTime.do";
 const char* host = "api.seniverse.com";     // 将要连接的心知天气地址 
 const int httpPort = 80;                    // 将要连接的服务器端口     
@@ -37,6 +41,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 //定义服务器 端口号80
 ESP8266WebServer server(80);
 temphumi TH; //温湿度对象
+LED led;  //LED对象
 
 int second; //系统重置后的秒数
 
@@ -64,7 +69,8 @@ void connectWiFi(){
 //启动服务器
 void setupServer(){
   server.on("/getTH",getTH);//获取当前温湿度
-  server.on("/setLed",setLed); //控制LED
+  server.on("/setLed",setLed); //开关LED
+  server.on("/adjustLed",adjustLed);//调节LED亮度
   server.onNotFound(handleRequest); //响应用户信息
   server.begin(); 
   Serial.println("HTTP server started");
@@ -135,13 +141,19 @@ void getTH(){
 }
 
 void setLed(){
-  
+  led.handleLED();
+}
+
+void adjustLed(){
+  int brightness = server.arg("brightness");
+  led.adjustLed(brightness);
 }
 
 void WeatherRequest(){
   WiFiClient wc;
   String httpRes = String("GET ")+reqRes+" HTTP/1.1\r\n"+"HOST: "+host+"\r\n"+"Connection:close\r\n\r\n";
   Serial.println("");
+  delay(2000);
   if(wc.connect(host,80)){
     Serial.println("Connected to Weather!!!");
     wc.print(httpRes);
@@ -204,11 +216,15 @@ void setup(void){
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // 初始化OLED并设置其IIC地址为 0x3C
   connectWiFi();
   setupServer();
+  led.LED_setup();
 }
 
 void loop(){
-  WeatherRequest();
   server.handleClient();
+  if(millis()-previousMillis>=interval){
+    previousMillis = millis();
+    WeatherRequest();
+  }
   //second = millis()/1000;
 }
 
