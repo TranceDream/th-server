@@ -333,6 +333,7 @@ void setup(void){
   connectWiFi();
   setupServer();
   led.LED_setup();
+  TH.th_setup();
 }
 
 void loop(){
