@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LOGIN</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div id="dv">
+        <span id="ssid"></span>
+    </div>
+   <form action="/getPWD">
+        PWD:  <input name="pwd"  type="password"/>
+        <input name="submit" type="submit" value="login"></button>
+    </form>
+    <script type="text/javascript">
+      /*  window.onload = function(){
+        let url = "/getSSID";
+        let opt={method:"GET"};
+        fetch(url,opt).then(res=>{
+            res.text().then(data=>{
+                document.getElementById("ssid").innerHTML=data;
+            });
+        });
+    }*/
+        window.onload = function(){
+            var loc = location.href;
+             var n1 = loc.length;//地址的总长度
+            var n2 = loc.indexOf("=");//取得=号的位置
+            var id = decodeURI(loc.substr(n2+1, n1-n2));
+            document.getElementById("ssid").innerHTML = id;
+        }
+    </script>
+</body>
+</html>

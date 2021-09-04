@@ -13,19 +13,21 @@
 
 //以下为一些常量
 #define esp8266_ssid "esp8266_zwld"       //自身作为热点时的ssid
-#define esp8266_pwd "tju1895"             //自身密码
-#define ssid1 "DESKTOP-OISTSQI 4858"      
-#define pwd1 "&D358f99"
-#define ssid2 "dyhsk"      
-#define pwd2 "dyh123456"
+#define esp8266_pwd "tju1895!"             //自身密码
 #define SCREEN_WIDTH 128 // 设置OLED宽度,单位:像素
 #define SCREEN_HEIGHT 64 // 设置OLED高度,单位:像素
 #define OLED_RESET 3  //RES引脚
 
 HTTPClient http;
+String wifissid;
+String wifipwd;
 unsigned long previousMillis = 0;
+unsigned long WiFiPrevious = 0;
+unsigned long WiFiInterval = 1000*10;
 unsigned long interval = 1000*60*30;
 bool first = true;
+bool WiFiFlag = true;
+bool WiFifirst = true;
 const String TimeUrl = "http://quan.suning.com/getSysTime.do";
 const char* host = "api.seniverse.com";     // 将要连接的心知天气地址 
 const int httpPort = 80;                    // 将要连接的服务器端口     
@@ -57,16 +59,26 @@ LED led;  //LED对象
 
 int second; //系统重置后的秒数
 
+//建立局域网
+void initWiFi(){
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP(esp8266_ssid,esp8266_pwd);
+  Serial.println("");
+  Serial.println(WiFi.softAPIP());
+  Serial.println(WiFi.localIP());
+}
+
 //连接WIFI
-void connectWiFi(){
-  WiFi.begin(ssid1,pwd1);
+void connectWiFi(const char*ssid,const char*pwd){
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid,pwd);
   Serial.print("Connecting to ");
   int i=0;
   while(WiFi.status()!= WL_CONNECTED){
     if(i==30){
       Serial.println("");
       Serial.print("OVER TIME!!!");
-      return;
+      //return;
     }
     Serial.print(".");
     i++;
@@ -76,6 +88,8 @@ void connectWiFi(){
   Serial.println("Connected to "+WiFi.SSID());
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+  WiFiFlag = false;
+  TH.th_setup();
 }
 
 //启动服务器
@@ -84,6 +98,10 @@ void setupServer(){
   server.on("/setLed",setLed); //开关LED
   server.on("/adjustLed",adjustLed);//调节LED亮度
   server.on("/getWeather",getWeather);//返回天气信息
+  server.on("/",toconnect);  //获取网络列表
+  server.on("/wifi",towifiApi);  //选择SSID
+  server.on("/getWiFiList",getWiFi);  //扫描并发送SSID
+  server.on("/getPWD",getPWD); //获取密码
   server.onNotFound(handleRequest); //响应用户信息
   server.begin(); 
   Serial.println("HTTP server started");
@@ -91,6 +109,45 @@ void setupServer(){
     Serial.println("SPIFFS ON");
   }
 }
+
+//首页
+void toconnect(){
+  String url = "/connect.html";
+  if(SPIFFS.exists(url)){
+    Serial.println(url);
+    File file = SPIFFS.open(url,"r");
+    server.streamFile(file, "text/html");
+    file.close();
+  }
+}
+
+//后端获取ssid
+void towifiApi(){
+  Serial.println("get HERE!!!!");
+  wifissid = server.arg("ssid");
+}
+
+//扫描Wifi
+void getWiFi(){
+  WiFi.scanNetworks(true);
+  delay(3000);
+  int n = WiFi.scanComplete();  
+  DynamicJsonDocument doc(512);
+  for(int i = 0;i<n;i++){
+    doc[WiFi.SSID(i)] = WiFi.SSID(i);
+  }
+  String wifiJson;
+  serializeJson(doc,wifiJson);
+  server.send(200,"application/json",wifiJson);
+}
+
+//后端获取密码
+void getPWD(){
+  wifipwd = server.arg("pwd");
+  Serial.println(wifipwd);
+  connectWiFi(wifissid.c_str(),wifipwd.c_str());
+}
+
 void handleRequest(){
 
   //获取资源url
@@ -319,6 +376,7 @@ void drawWeather(int temperature,String weather){
 }
 
 void Draw(){
+  if(WiFi.status()!=WL_CONNECTED) return;
   if((millis()-previousMillis>=interval)||first){
     previousMillis = millis();
     first = false;
@@ -326,20 +384,31 @@ void Draw(){
   }
 }
 
+void checkWiFi(){
+  if(WiFiFlag) return;
+  Serial.println("dd");
+  if(millis()-WiFiPrevious>=WiFiInterval){
+    WiFiPrevious = millis();
+    if(WiFi.status()!=WL_CONNECTED){
+      initWiFi();WiFiFlag=true;
+    }
+  }
+}
+
 void setup(void){
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("");
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // 初始化OLED并设置其IIC地址为 0x3C
-  connectWiFi();
+  initWiFi();
   setupServer();
   led.LED_setup();
-  TH.th_setup();
 }
 
 void loop(){
   server.handleClient();
-  TH.check_time();
+  if(!WiFiFlag)TH.check_time();
   Draw();
+  checkWiFi();
 }
 
 // 获取文件类型

@@ -138,8 +138,7 @@ String temphumi::read_file(){
 }
 
 boolean temphumi::get_time(){
-  //WiFi.mode(WIFI_STA);
-  connectWiFi();
+
   GetUrl = "http://quan.suning.com/getSysTime.do";
   http.setTimeout(5000);
   http.begin(client,GetUrl);
@@ -164,14 +163,14 @@ boolean temphumi::get_time(){
   delay(3000);
 }
 
-void temphumi::connectWiFi(){
+/*void temphumi::connectWiFi(){
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("Connected to " + WiFi.SSID());
-}
+}*/
 
 boolean temphumi::fileflag(String str){
   if(str == timer)
@@ -184,7 +183,7 @@ boolean temphumi::fileflag(String str){
 
 void temphumi::addToDB(){
   boolean DBflag = true;
-  connectWiFi();
+ // if(WiFi.status()!=WL_CONNECTED) connectWiFi();
   while(DBflag){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     client->setInsecure();
