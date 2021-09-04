@@ -126,11 +126,13 @@ String temphumi::read_file(){
   String content = "";
   if (dataFile)
   {
-    Serial.println("文件内容是：");
+    //Serial.println("文件内容是：");
     while (dataFile.available())
       content = content + (char)dataFile.read();
-    Serial.println(content);
+    //Serial.println(content);
   }
+  if(content.length() >= 480)
+    content = content.substring(content.length()-461, content.length()-1);
   dataFile.close();
   return content;
 }
@@ -193,5 +195,5 @@ void temphumi::addToDB(){
       DBflag = false;
     https.end();
   }
-  Serial.println("Add data to DB Successfully.");
+  Serial.println("Add data to DB Successfully. temperature: " + (String)temperature + " humidity: " + (String)humidity);
 }

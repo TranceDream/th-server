@@ -132,7 +132,7 @@ String temphumi::read_file(){
     //Serial.println(content);
   }
   if(content.length() >= 480)
-    content = content.substring(content.length()-461, content.length()-1))
+    content = content.substring(content.length()-461, content.length()-1);
   dataFile.close();
   return content;
 }
