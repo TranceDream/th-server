@@ -10,6 +10,23 @@ class THController {
 		ctx.body = result
 	}
 
+	async getDataByDate(ctx) {
+		var start = new Date(ctx.request.body.date)
+		var end = new Date()
+		end.setTime(start.getTime() + 24 * 60 * 60 * 1000)
+		const data = await THData.find({
+			date: {
+				$gte: start,
+				$lte: end,
+			},
+		})
+		const result = {
+			code: 200,
+			data,
+		}
+		ctx.body = result
+	}
+
 	async getLatest(ctx) {
 		const data = await THData.find().sort({ date: 'desc' }).limit(1)
 		const result = {
