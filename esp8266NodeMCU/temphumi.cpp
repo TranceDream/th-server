@@ -16,11 +16,6 @@ void temphumi::th_setup(){
   //格式化SPIFFS
   //SPIFFS.format();
   // 启动SPIFFS
-  if(SPIFFS.begin()){
-    Serial.println("SPIFFS Started.");
-  } else {
-    Serial.println("SPIFFS Failed to Start.");
-  }
 }
 
 void temphumi::check_time(){
@@ -163,15 +158,6 @@ boolean temphumi::get_time(){
   http.end();
   delay(3000);
 }
-
-/*void temphumi::connectWiFi(){
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("Connected to " + WiFi.SSID());
-}*/
 
 boolean temphumi::fileflag(String str){
   if(str == timer)

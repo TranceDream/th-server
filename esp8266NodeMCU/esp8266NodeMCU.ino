@@ -69,11 +69,9 @@ void initWiFi(){
 }
 
 //连接WIFI
-void connectWiFi(const char*ssid,const char*pwd){
+void connectWiFi(){
   WiFi.mode(WIFI_STA);
-  Serial.println(ssid);
-  Serial.println(pwd);
-  WiFi.begin(ssid,pwd);
+  WiFi.begin(server.arg("ssid").c_str(),server.arg("pwd").c_str());
   Serial.print("Connecting to ");
   int i=0;
   while(WiFi.status()!= WL_CONNECTED){
@@ -100,11 +98,11 @@ void setupServer(){
   server.on("/setLed",setLed); //开关LED
   server.on("/adjustLed",adjustLed);//调节LED亮度
   server.on("/getWeather",getWeather);//返回天气信息
-  //server.on("/",toconnect);  //获取网络列表
-  server.on("/wifi",towifiApi);  //选择SSID
-  server.on("/getWiFiList",getWiFi);  //扫描并发送SSID
-  server.on("/getPWD",getPWD); //获取密码
-  server.onNotFound(handleRequest); //响应用户信息
+  server.on("/",connectWiFi);  //获取网络列表
+  //server.on("/wifi",towifiApi);  //选择SSID
+  //server.on("/getWiFiList",getWiFi);  //扫描并发送SSID
+  //server.on("/getPWD",getPWD); //获取密码
+  //server.onNotFound(handleRequest); //响应用户信息
   server.begin(); 
   Serial.println("HTTP server started");
   if(SPIFFS.begin()){
@@ -112,19 +110,8 @@ void setupServer(){
   }
 }
 
-//首页
-/*void toconnect(){
-  String url = "/connect.html";
-  if(SPIFFS.exists(url)){
-    Serial.println(url);
-    File file = SPIFFS.open(url,"r");
-    server.streamFile(file, "text/html");
-    file.close();
-  }
-}*/
-
 //后端获取ssid
-void towifiApi(){
+/*void towifiApi(){
   Serial.println("get HERE!!!!");
   wifissid = server.arg("ssid");
   server.send(200,"text/plain","OK");
@@ -163,7 +150,7 @@ void handleRequest(){
   if(!fileExit){
     server.send(404,"text/plain","404 NOT FOUND!!!");
   }
-}
+}*/
 
 //处理资源文件
 bool handleFile(String url){
@@ -223,15 +210,14 @@ void adjustLed(){
 }
 
 void getWeather(){
-  WeatherRequest(DetailHttp);
+  weatherRequest(DetailHttp);
   String WeatherJson;
   serializeJson(detailDoc,WeatherJson);
   server.send(200,"application/json",WeatherJson);
 }
 
-void WeatherRequest(String httpRes){
+void weatherRequest(String httpRes){
   WiFiClient wc;
-  //String httpRes = String("GET ")+reqRes+" HTTP/1.1\r\n"+"HOST: "+host+"\r\n"+"Connection:close\r\n\r\n";
   Serial.println("");
   delay(2000);
   if(wc.connect(host,80)){
@@ -275,7 +261,7 @@ void parseRoughWeatherJson(WiFiClient wc){
 }
 
 void parseDetailWeatherJson(WiFiClient wc){
-  const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + 3*JSON_OBJECT_SIZE(14) + 860;
+  const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + 3*JSON_OBJECT_SIZE(14) + 500;
   
   DynamicJsonDocument doc(capacity);
   
@@ -300,39 +286,6 @@ void parseDetailWeatherJson(WiFiClient wc){
   const char* results_0_daily_0_wind_speed = results_0_daily_0["wind_speed"];
   const char* results_0_daily_0_wind_scale = results_0_daily_0["wind_scale"];
   const char* results_0_daily_0_humidity = results_0_daily_0["humidity"];
-  
-  JsonObject results_0_daily_1 = results_0_daily[1];
-  const char* results_0_daily_1_date = results_0_daily_1["date"];
-  const char* results_0_daily_1_text_day = results_0_daily_1["text_day"];
-  const char* results_0_daily_1_code_day = results_0_daily_1["code_day"];
-  const char* results_0_daily_1_text_night = results_0_daily_1["text_night"]; 
-  const char* results_0_daily_1_code_night = results_0_daily_1["code_night"]; 
-  const char* results_0_daily_1_high = results_0_daily_1["high"];
-  const char* results_0_daily_1_low = results_0_daily_1["low"]; 
-  const char* results_0_daily_1_rainfall = results_0_daily_1["rainfall"]; 
-  const char* results_0_daily_1_precip = results_0_daily_1["precip"]; 
-  const char* results_0_daily_1_wind_direction = results_0_daily_1["wind_direction"];
-  const char* results_0_daily_1_wind_direction_degree = results_0_daily_1["wind_direction_degree"]; 
-  const char* results_0_daily_1_wind_speed = results_0_daily_1["wind_speed"];
-  const char* results_0_daily_1_wind_scale = results_0_daily_1["wind_scale"];
-  const char* results_0_daily_1_humidity = results_0_daily_1["humidity"]; 
-  
-  JsonObject results_0_daily_2 = results_0_daily[2];
-  const char* results_0_daily_2_date = results_0_daily_2["date"];
-  const char* results_0_daily_2_text_day = results_0_daily_2["text_day"];
-  const char* results_0_daily_2_code_day = results_0_daily_2["code_day"];
-  const char* results_0_daily_2_text_night = results_0_daily_2["text_night"];
-  const char* results_0_daily_2_code_night = results_0_daily_2["code_night"];
-  const char* results_0_daily_2_high = results_0_daily_2["high"]; 
-  const char* results_0_daily_2_low = results_0_daily_2["low"]; 
-  const char* results_0_daily_2_rainfall = results_0_daily_2["rainfall"];
-  const char* results_0_daily_2_precip = results_0_daily_2["precip"]; 
-  const char* results_0_daily_2_wind_direction = results_0_daily_2["wind_direction"]; 
-  const char* results_0_daily_2_wind_direction_degree = results_0_daily_2["wind_direction_degree"]; 
-  const char* results_0_daily_2_wind_speed = results_0_daily_2["wind_speed"];
-  const char* results_0_daily_2_wind_scale = results_0_daily_2["wind_scale"]; 
-  const char* results_0_daily_2_humidity = results_0_daily_2["humidity"]; 
-  
   const char* results_0_last_update = results_0["last_update"]; 
   
   // 从以上信息中摘选几个通过串口监视器显示
@@ -378,23 +331,22 @@ void drawWeather(int temperature,String weather){
   display.display();
 }
 
-void Draw(){
-  if(WiFiFlag) return;
-  if((millis()-previousMillis>=interval)||first){
-    previousMillis = millis();
-    first = false;
-    WeatherRequest(RoughHttp);
-  }
-}
-
 void checkWiFi(){
   if(WiFiFlag) return;
   //Serial.println("dd");
   if(millis()-WiFiPrevious>=WiFiInterval){
     WiFiPrevious = millis();
     if(WiFi.status()!=WL_CONNECTED){
-      initWiFi();WiFiFlag=true;
+      WiFiFlag=true;initWiFi();
     }
+  }
+}
+
+void draw(){
+  if(WiFiFlag) return;
+  if((millis()-previousMillis>=interval)||first){
+    first = false;
+    weatherRequest(RoughHttp);
   }
 }
 
@@ -410,8 +362,8 @@ void setup(void){
 void loop(){
   server.handleClient();
   if(WiFiFlag==false)TH.check_time();
-  Draw();
   checkWiFi();
+  draw();
 }
 
 // 获取文件类型
