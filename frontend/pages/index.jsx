@@ -10,24 +10,60 @@ import {
 	Tr,
 	Th,
 	Td,
+	AspectRatio,
 	Divider,
 } from '@chakra-ui/react'
 import { FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi'
-import HomeChart from '../components/HomeChart'
+import HomeTitle from '../components/HomeLabel'
+import { useRouter } from 'next/router'
+import TChart from '@/components/TChart'
+import HChart from '@/components/HChart'
 
 export async function getStaticProps() {
-	const res = await fetch('http://localhost:9000/api/all')
-	const all = await res.json()
-
+	const res = await fetch(
+		'https://th-server-backend-tranced.vercel.app/api/date',
+		{
+			method: 'POST',
+			headers: {
+				'Content-Type':
+					'application/x-www-form-urlencoded;charset=UTF-8',
+			},
+			body: new URLSearchParams({
+				date: new Date('2021/9/4'),
+			}),
+		}
+	)
+	// const res = await fetch(
+	// 	'http://localhost:9000/api/all'
+	// )
+	const thdata = await res.json()
 	return {
 		props: {
-			all,
+			thdata,
 		},
 	}
 }
 
-export default function Home({ all }) {
-	// const [expand, changeExpand] = useState(false)
+export default function Home({ thdata }) {
+	// const router = useRouter()
+	// console.log(router.query.ip)
+
+	let tdata = []
+	let hdata = []
+	thdata.data.map((element) => {
+		const elementDate = new Date(element.date)
+		const str =
+			'' +
+			elementDate.getHours() +
+			':' +
+			elementDate.getMinutes() +
+			':' +
+			elementDate.getSeconds()
+		tdata.push({ x: str, y: element.temperature })
+		hdata.push({ x: str, y: element.humidity })
+	})
+
+	console.log(tdata)
 	return (
 		<>
 			<Heading fontWeight='bold' mb={4} letterSpacing='tight'>
@@ -35,31 +71,46 @@ export default function Home({ all }) {
 			</Heading>
 			<Flex flexDir='row' maxW='100%'>
 				<Flex flexDir='column' flex={1} mr={2}>
-					<HomeChart
+					<HomeTitle
 						title='Temperature'
 						type='T'
-						value={all.data[0].temperature}
+						value={thdata.data[0].temperature}
 					/>
 				</Flex>
 				<Flex flexDir='column' flex={1} ml={2}>
-					<HomeChart
+					<HomeTitle
 						title='Humidity'
 						type='H'
-						value={all.data[0].humidity}
+						value={thdata.data[0].humidity}
 					/>
 				</Flex>
 			</Flex>
-			<Flex justifyContent='space-between' mt={8}>
+			<Divider mt={2} />
+			<Flex justifyContent='space-between' mt={4}>
 				<Flex align='flex-end'>
 					<Heading as='h2' size='lg' letterSpacing='tight'>
-						Data of the week
+						Overview
 					</Heading>
 					<Text fontSize='small' color='gray' ml={4}>
-						Aug 2021
+						2021/9/4
 					</Text>
 				</Flex>
 				<IconButton icon={<FiCalendar />} />
 			</Flex>
+
+			<Flex flexDir='row' maxW='100%'>
+				<Flex flexDir='column' flex={1} mr={2}>
+					<AspectRatio ratio={18 / 9}>
+						<TChart tdata={tdata} />
+					</AspectRatio>
+				</Flex>
+				<Flex flexDir='column' flex={1} ml={2}>
+					<AspectRatio ratio={18 / 9}>
+						<HChart hdata={hdata} />
+					</AspectRatio>
+				</Flex>
+			</Flex>
+
 			<Flex flexDir='column'>
 				<Flex overflow='auto'>
 					<Table variant='unstyled' mt={4}>
@@ -71,7 +122,7 @@ export default function Home({ all }) {
 							</Tr>
 						</Thead>
 						<Tbody>
-							{all.data.map((element) => {
+							{thdata.data.map((element) => {
 								const elementDate = new Date(element.date)
 								return (
 									<Tr key={element._id}>
@@ -80,7 +131,13 @@ export default function Home({ all }) {
 												'/' +
 												(elementDate.getMonth() + 1) +
 												'/' +
-												elementDate.getDate()}
+												elementDate.getDate() +
+												' ' +
+												elementDate.getHours() +
+												':' +
+												elementDate.getMinutes() +
+												':' +
+												elementDate.getSeconds()}
 										</Td>
 										<Td>
 											<Flex display='inline-table'>
@@ -104,19 +161,6 @@ export default function Home({ all }) {
 						</Tbody>
 					</Table>
 				</Flex>
-				{/* <Flex align='center'>
-					<Divider />
-					<IconButton
-						icon={
-							expand == true ? <FiChevronUp /> : <FiChevronDown />
-						}
-						onClick={() => {
-							console.log(expand)
-							changeExpand(!expand)
-						}}
-					/>
-					<Divider />
-				</Flex> */}
 			</Flex>
 		</>
 	)

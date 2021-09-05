@@ -3,21 +3,9 @@ import { useRouter } from 'next/router'
 import { Flex, Heading, Text, Icon, Link } from '@chakra-ui/react'
 import {
 	FiHome,
-	FiPieChart,
-	FiDollarSign,
-	FiBox,
-	FiCalendar,
-	FiChevronDown,
-	FiChevronUp,
-	FiPlus,
-	FiThermometer,
-	FiDropLet,
-	FiCreditCard,
-	FiSearch,
-	FiBell,
-	FiDroplet,
-	FiActivity,
 	FiSettings,
+	FiSliders,
+	FiCloud,
 } from 'react-icons/fi'
 
 function getCurrentPage(pathname) {
@@ -25,7 +13,7 @@ function getCurrentPage(pathname) {
 		case '/':
 			return 0
 			break
-		case '/temperature':
+		case '/control':
 			return 1
 			break
 		case '/humidity':
@@ -60,7 +48,7 @@ function Sidebar() {
 					align='flex-start'
 					justifyContent='center'>
 					<Flex className='sidebar-items'>
-						<Link href='C:/Users/tranced/Resources/selab/th-server/frontend/out/'>
+						<Link href='/'>
 							<Icon
 								as={FiHome}
 								fontSize='2xl'
@@ -74,47 +62,32 @@ function Sidebar() {
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href='/temperature'>
+						<Link href='/control'>
 							<Icon
-								as={FiThermometer}
+								as={FiSliders}
 								fontSize='2xl'
 								className={page == 1 ? 'active-icon' : ''}
 							/>
 						</Link>
 						<Link
-							href='/temperature'
+							href='/control'
 							_hover={{ textDecor: 'none' }}>
 							<Text className={page == 1 ? 'active' : ''}>
-								Temperature
+								Control
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href='/humidity'>
+						<Link href='/weather'>
 							<Icon
-								as={FiDroplet}
+								as={FiCloud}
 								fontSize='2xl'
 								className={page == 2 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link href='/humidity' _hover={{ textDecor: 'none' }}>
+						<Link href='/weather' _hover={{ textDecor: 'none' }}>
 							<Text className={page == 2 ? 'active' : ''}>
-								Humidity
-							</Text>
-						</Link>
-					</Flex>
-					<Flex className='sidebar-items'>
-						<Link>
-							<Icon
-								as={FiActivity}
-								fontSize='2xl'
-								className={page == 3 ? 'active-icon' : ''}
-							/>
-						</Link>
-						<Link _hover={{ textDecor: 'none' }}>
-							{/* TODO */}
-							<Text className={page == 3 ? 'active' : ''}>
-								TODO
+								Weather
 							</Text>
 						</Link>
 					</Flex>
