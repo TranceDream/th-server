@@ -24,6 +24,7 @@ void temphumi::th_setup(){
 }
 
 void temphumi::check_time(){
+  //Serial.println("lalalala");
   String current_time = cur_time();
     if(fileflag(current_time)){
       read_AM2321();

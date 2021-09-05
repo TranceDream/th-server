@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+        
         <meta charset="UTF-8">
         <title>WiFi获取</title>
+        <script type=“text/javascript” src="/jquery-3.6.0.min.js"></script>
     <style>
         .lia{
             text-decoration: none;
@@ -14,37 +16,37 @@
     <div id="WiFiList">
         <ul id="list" style="list-style: none"></ul>
     </div>
-<script type="text/javascript">
-    function getWiFi(){
-        var lu = document.getElementById("list");
-       var nodes = lu.childNodes;
-       for(var i = nodes.length-1;i>=0;i--)
-            lu.removeChild(nodes[i]);
-        let url = "/getWiFiList";
-        let opt = {method:"GET"};
-        fetch(url, opt).then(res => {
-                    res.text().then(data=>{
-                        console.log(data);
-                        var obj = JSON.parse(data);
-                        for(key in obj){
-                            var liObj = document.createElement("li");
-                            var link = document.createElement("button");
-                            link.innerHTML = obj[key];
-                            link.className = "lia";
-                            link.onclick = function(){
-                                var ssid = this.innerHTML;
-                                let url2 = "/wifi?ssid="+this.innerHTML;
-                                let opt2 = {method:"GET"};
-                                fetch(url2,opt2).then(res=>{
-                                    location.href="/login.html?ssid="+encodeURI(ssid);
-                                });
-                            };
-                            liObj.appendChild(link);
-                            lu.appendChild(liObj);
-                        }
-                    })
-                });
-    }
-</script>
+    <script type="text/javascript">
+        function getWiFi(){
+            var lu = document.getElementById("list");
+           var nodes = lu.childNodes;
+           for(var i = nodes.length-1;i>=0;i--)
+                lu.removeChild(nodes[i]);
+            let url = "/getWiFiList";
+            let opt = {method:"GET"};
+            fetch(url, opt).then(res => {
+                        res.text().then(data=>{
+                            console.log(data);
+                            var obj = JSON.parse(data);
+                            for(key in obj){
+                                var liObj = document.createElement("li");
+                                var link = document.createElement("button");
+                                link.innerHTML = obj[key];
+                                link.className = "lia";
+                                link.onclick = function(){
+                                    var ssid = this.innerHTML;
+                                    let url2 = "/wifi?ssid="+this.innerHTML;
+                                    let opt2 = {method:"GET"};
+                                    fetch(url2,opt2).then(res=>{
+                                        location.href="/login.html?ssid="+encodeURI(ssid);
+                                    });
+                                };
+                                liObj.appendChild(link);
+                                lu.appendChild(liObj);
+                            }
+                        })
+                    });
+        }
+    </script>
 </body>
 </html>

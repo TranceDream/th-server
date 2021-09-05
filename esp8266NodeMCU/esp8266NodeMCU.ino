@@ -71,6 +71,8 @@ void initWiFi(){
 //连接WIFI
 void connectWiFi(const char*ssid,const char*pwd){
   WiFi.mode(WIFI_STA);
+  Serial.println(ssid);
+  Serial.println(pwd);
   WiFi.begin(ssid,pwd);
   Serial.print("Connecting to ");
   int i=0;
@@ -98,7 +100,7 @@ void setupServer(){
   server.on("/setLed",setLed); //开关LED
   server.on("/adjustLed",adjustLed);//调节LED亮度
   server.on("/getWeather",getWeather);//返回天气信息
-  server.on("/",toconnect);  //获取网络列表
+  //server.on("/",toconnect);  //获取网络列表
   server.on("/wifi",towifiApi);  //选择SSID
   server.on("/getWiFiList",getWiFi);  //扫描并发送SSID
   server.on("/getPWD",getPWD); //获取密码
@@ -111,7 +113,7 @@ void setupServer(){
 }
 
 //首页
-void toconnect(){
+/*void toconnect(){
   String url = "/connect.html";
   if(SPIFFS.exists(url)){
     Serial.println(url);
@@ -119,12 +121,13 @@ void toconnect(){
     server.streamFile(file, "text/html");
     file.close();
   }
-}
+}*/
 
 //后端获取ssid
 void towifiApi(){
   Serial.println("get HERE!!!!");
   wifissid = server.arg("ssid");
+  server.send(200,"text/plain","OK");
 }
 
 //扫描Wifi
@@ -165,7 +168,7 @@ void handleRequest(){
 //处理资源文件
 bool handleFile(String url){
   if(url.endsWith("/")){
-    url="/home.html";
+    url="/connect.html";
   }
 
   String contentType = getContentType(url);
@@ -376,7 +379,7 @@ void drawWeather(int temperature,String weather){
 }
 
 void Draw(){
-  if(WiFi.status()!=WL_CONNECTED) return;
+  if(WiFiFlag) return;
   if((millis()-previousMillis>=interval)||first){
     previousMillis = millis();
     first = false;
@@ -386,7 +389,7 @@ void Draw(){
 
 void checkWiFi(){
   if(WiFiFlag) return;
-  Serial.println("dd");
+  //Serial.println("dd");
   if(millis()-WiFiPrevious>=WiFiInterval){
     WiFiPrevious = millis();
     if(WiFi.status()!=WL_CONNECTED){
@@ -406,7 +409,7 @@ void setup(void){
 
 void loop(){
   server.handleClient();
-  if(!WiFiFlag)TH.check_time();
+  if(WiFiFlag==false)TH.check_time();
   Draw();
   checkWiFi();
 }
