@@ -5,6 +5,7 @@ import {
 	Heading,
 	Text,
 	IconButton,
+	Skeleton,
 	Table,
 	Thead,
 	Tbody,
@@ -14,36 +15,10 @@ import {
 	AspectRatio,
 	Divider,
 } from '@chakra-ui/react'
-import { FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi'
-import HomeTitle from '../components/HomeLabel'
+import { FiCalendar } from 'react-icons/fi'
 import { useRouter } from 'next/router'
 import TChart from '@/components/TChart'
 import HChart from '@/components/HChart'
-
-// export async function getStaticProps() {
-// const res = await fetch(
-// 	'https://th-server-backend-tranced.vercel.app/api/date',
-// 	{
-// 		method: 'POST',
-// 		headers: {
-// 			'Content-Type':
-// 				'application/x-www-form-urlencoded;charset=UTF-8',
-// 		},
-// 		body: new URLSearchParams({
-// 			date: new Date('2021/9/4'),
-// 		}),
-// 	}
-// )
-// // const res = await fetch(
-// // 	'http://localhost:9000/api/all'
-// // )
-// const thdata = await res.json()
-// return {
-// 	props: {
-// 		thdata,
-// 	},
-// }
-// }
 
 export default function Home({ thdata }) {
 	// const router = useRouter()
@@ -100,24 +75,28 @@ export default function Home({ thdata }) {
 			</Heading>
 			<Flex flexDir='row' maxW='100%'>
 				<Flex flexDir='column' flex={1} mr={2}>
-					<HomeTitle
-						title='Temperature'
-						type='T'
-						value={
-							dateTH.l
+					<Text fontSize='sm' color='gray'>
+						Temperature
+					</Text>
+					<Skeleton isLoaded={dateTH.l}>
+						<Text fontSize='2xl' fontWeight='bold'>
+							{(dateTH.l
 								? dateTH.thdata.data[0].temperature
-								: 'wait'
-						}
-					/>
+								: 'null') + '°C'}
+						</Text>
+					</Skeleton>
 				</Flex>
 				<Flex flexDir='column' flex={1} ml={2}>
-					<HomeTitle
-						title='Humidity'
-						type='H'
-						value={
-							dateTH.l ? dateTH.thdata.data[0].humidity : 'wait'
-						}
-					/>
+					<Text fontSize='sm' color='gray'>
+						Humidity
+					</Text>
+					<Skeleton isLoaded={dateTH.l}>
+						<Text fontSize='2xl' fontWeight='bold'>
+							{(dateTH.l
+								? dateTH.thdata.data[0].humidity
+								: 'null') + '%rh'}
+						</Text>
+					</Skeleton>
 				</Flex>
 			</Flex>
 			<Divider mt={2} />
@@ -197,9 +176,15 @@ export default function Home({ thdata }) {
 								})
 							) : (
 								<Tr>
-									<Td></Td>
-									<Td></Td>
-									<Td></Td>
+									<Td>
+										<Skeleton isLoaded={dateTH.l} />
+									</Td>
+									<Td>
+										<Skeleton isLoaded={dateTH.l} />
+									</Td>
+									<Td>
+										<Skeleton isLoaded={dateTH.l} />
+									</Td>
 								</Tr>
 							)}
 						</Tbody>
