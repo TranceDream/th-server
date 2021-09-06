@@ -2,7 +2,6 @@ import React from 'react'
 import { Line } from 'react-chartjs-2'
 
 const getData = (data) => {
-	console.log(data)
 	return {
 		datasets: [
 			{
@@ -50,8 +49,7 @@ const options = {
 		yAxes: {
 			grid: {
 				borderDash: [3, 3],
-			},
-			beginAtZero: true, // this works
+			}, // this works
 		},
 	},
 }

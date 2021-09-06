@@ -2,7 +2,6 @@ import React from 'react'
 import { Line } from 'react-chartjs-2'
 
 const getData = (data) => {
-	console.log(data)
 	return {
 		datasets: [
 			{
