@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && next export",
     "start": "next start",
     "lint": "next lint"
   },
@@ -12,6 +12,7 @@
     "@chakra-ui/react": "^1.6.7",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
+    "axios": "^0.21.3",
     "chart.js": "^3.5.1",
     "echarts": "^5.2.0",
     "echarts-for-react": "^3.0.1",
@@ -21,6 +22,7 @@
     "react-chartjs-2": "^3.0.4",
     "react-dom": "17.0.2",
     "react-icons": "^4.2.0",
+    "react-switch": "^6.0.0",
     "swr": "^1.0.0"
   },
   "devDependencies": {

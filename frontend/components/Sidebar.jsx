@@ -1,12 +1,7 @@
 import React from 'react'
 import { useRouter } from 'next/router'
 import { Flex, Heading, Text, Icon, Link } from '@chakra-ui/react'
-import {
-	FiHome,
-	FiSettings,
-	FiSliders,
-	FiCloud,
-} from 'react-icons/fi'
+import { FiHome, FiSettings, FiSliders, FiCloud } from 'react-icons/fi'
 
 function getCurrentPage(pathname) {
 	switch (pathname) {
@@ -48,44 +43,44 @@ function Sidebar() {
 					align='flex-start'
 					justifyContent='center'>
 					<Flex className='sidebar-items'>
-						<Link href='/'>
+						<Link href={'/' + '?ip=' + router.query.ip}>
 							<Icon
 								as={FiHome}
 								fontSize='2xl'
 								className={page == 0 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link href='/' _hover={{ textDecor: 'none' }}>
+						<Link
+							href={'/' + '?ip=' + router.query.ip}
+							_hover={{ textDecor: 'none' }}>
 							<Text className={page == 0 ? 'active' : ''}>
 								Home
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href='/control'>
+						<Link href={'/control' + '?ip=' + router.query.ip}>
 							<Icon
 								as={FiSliders}
 								fontSize='2xl'
 								className={page == 1 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link
-							href='/control'
-							_hover={{ textDecor: 'none' }}>
+						<Link href={'/control' + '?ip=' + router.query.ip} _hover={{ textDecor: 'none' }}>
 							<Text className={page == 1 ? 'active' : ''}>
 								Control
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href='/weather'>
+						<Link href={'/weather' + '?ip=' + router.query.ip}>
 							<Icon
 								as={FiCloud}
 								fontSize='2xl'
 								className={page == 2 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link href='/weather' _hover={{ textDecor: 'none' }}>
+						<Link href={'/weather' + '?ip=' + router.query.ip} _hover={{ textDecor: 'none' }}>
 							<Text className={page == 2 ? 'active' : ''}>
 								Weather
 							</Text>
