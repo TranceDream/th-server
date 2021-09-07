@@ -12,18 +12,15 @@ void temphumi::th_setup(){
   while(!timeflag){
     timeflag = get_time();
   }
-  Serial.println("Get current time done.");
-  //格式化SPIFFS
-  //SPIFFS.format();
-  // 启动SPIFFS
 }
 
 void temphumi::check_time(){
-  //Serial.println("lalalala");
-  String current_time = cur_time();
-    if(fileflag(current_time)){
+    if((millis() - AM2321Previous >= AM2321Interval) || firstFlag){
+      AM2321Previous = millis();
+      get_time();
       read_AM2321();
-      CheckCRC(current_time);
+      CheckCRC();
+      firstFlag = false;
     }
 }
 
@@ -63,7 +60,7 @@ String temphumi::read_AM2321(){
   return file_cont;
 }
 
-void temphumi::CheckCRC(String current_time){
+void temphumi::CheckCRC(){
   byte result[] = {fuctionCode, dataLength, humiHigh, humiLow, tempHigh, tempLow};
   unsigned int crc = 0xFFFF;
   int tmp = 0;
@@ -84,30 +81,11 @@ void temphumi::CheckCRC(String current_time){
     //写入数据库
     addToDB();
     //写入文件
-    file_cont = current_time + "-" + file_cont;
+    file_cont = cur_mon + cur_day + cur_hour + "-" + file_cont;
     write_file(file_cont);
-    //read_file();
   }
   else
-    Serial.println("CRC Error");  
-}
-
-String temphumi::cur_time(){
-  time(&now); 
-  tm_now = gmtime(&now);
-  int m, d, h;
-  h = tm_now->tm_hour + cur_hour;
-  d = tm_now->tm_mday + cur_day - 1;
-  m = tm_now->tm_mon + cur_mon;
-  if(h > 24){
-    d += (h / 24);
-    h %= 24;  
-  }
-  String mon = m > 9 ? (String)m : "0" + (String)m;
-  String day = d > 9 ? (String)d : "0" + (String)d;
-  String hour = h > 9 ? (String)h : "0" + (String)h;
-
-  return (mon + day + hour);
+    Serial.println("AM2321: CRC Error");  
 }
 
 void temphumi::write_file(String str){
@@ -134,40 +112,29 @@ String temphumi::read_file(){
 }
 
 boolean temphumi::get_time(){
-
   GetUrl = "http://quan.suning.com/getSysTime.do";
   http.setTimeout(5000);
   http.begin(client,GetUrl);
 
   int httpCode = http.GET();
   if(httpCode > 0) {
-      Serial.printf("[HTTP] GET... code: %d\n", httpCode);
       if (httpCode == HTTP_CODE_OK) {
         //读取响应内容
         response = http.getString();
-        cur_mon = atoi(response.substring(50, 52).c_str());
-        cur_day = atoi(response.substring(52, 54).c_str());
-        cur_hour = atoi(response.substring(54, 56).c_str());
+        cur_mon = response.substring(50, 52);
+        cur_day = response.substring(52, 54);
+        cur_hour = response.substring(54, 56);
       }
+      Serial.println("AM2321: Get current time done.");
       return true;
   } 
   else {
-      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+      Serial.printf("AM2321:GET current time failed, error: %s\n", http.errorToString(httpCode).c_str());
       return false;
   }
   http.end();
   delay(3000);
 }
-
-boolean temphumi::fileflag(String str){
-  if(str == timer)
-    return false;
-  else{
-    timer = str;
-    return true;  
-  }
-}
-
 
 void temphumi::addToDB(){
   boolean DBflag = true;
@@ -182,5 +149,5 @@ void temphumi::addToDB(){
       DBflag = false;
     https.end();
   }
-  Serial.println("Add data to DB Successfully. temperature: " + (String)temperature + " humidity: " + (String)humidity);
+  Serial.println("AM2321: Add to DB Successfully. temperature: " + (String)temperature + " humidity: " + (String)humidity);
 }

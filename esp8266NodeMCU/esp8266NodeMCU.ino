@@ -384,7 +384,6 @@ void loop(){
   server.handleClient();
   TH.check_time();
   ESP.wdtFeed();
-  delay(5);
  // httpsHandle();
 }
 
