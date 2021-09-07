@@ -1,30 +1,43 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/router'
-import { Flex, Heading, Text, Icon, Link } from '@chakra-ui/react'
+import {
+	Flex,
+	Button,
+	Heading,
+	Text,
+	Icon,
+	Link,
+	Modal,
+	ModalOverlay,
+	ModalContent,
+	ModalHeader,
+	ModalFooter,
+	ModalBody,
+	ModalCloseButton,
+	useDisclosure,
+	Input,
+} from '@chakra-ui/react'
 import { FiHome, FiSettings, FiSliders, FiCloud } from 'react-icons/fi'
 
 function getCurrentPage(pathname) {
 	switch (pathname) {
 		case '/':
 			return 0
-			break
 		case '/control':
 			return 1
-			break
 		case '/humidity':
 			return 2
-			break
 		case '/settings':
 			return 3
-			break
 		default:
 			return 4
-			break
 	}
 }
 
 function Sidebar() {
-	// const [Page, setPage] = useState('0')
+	const [ipValue, setIpValue] = useState('')
+	const handleChange = (event) => setIpValue(event.target.value)
+	const { isOpen, onOpen, onClose } = useDisclosure()
 	let router = useRouter()
 	let page = getCurrentPage(router.pathname)
 	return (
@@ -43,7 +56,13 @@ function Sidebar() {
 					align='flex-start'
 					justifyContent='center'>
 					<Flex className='sidebar-items'>
-						<Link href={'/' + '?ip=' + router.query.ip}>
+						<Link
+							href={
+								'/' +
+								(router.query.ip == undefined
+									? ''
+									: '?ip=' + router.query.ip)
+							}>
 							<Icon
 								as={FiHome}
 								fontSize='2xl'
@@ -51,7 +70,12 @@ function Sidebar() {
 							/>
 						</Link>
 						<Link
-							href={'/' + '?ip=' + router.query.ip}
+							href={
+								'/' +
+								(router.query.ip == undefined
+									? ''
+									: '?ip=' + router.query.ip)
+							}
 							_hover={{ textDecor: 'none' }}>
 							<Text className={page == 0 ? 'active' : ''}>
 								Home
@@ -59,28 +83,54 @@ function Sidebar() {
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href={'/control' + '?ip=' + router.query.ip}>
+						<Link
+							href={
+								'/control' +
+								(router.query.ip == undefined
+									? ''
+									: '?ip=' + router.query.ip)
+							}>
 							<Icon
 								as={FiSliders}
 								fontSize='2xl'
 								className={page == 1 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link href={'/control' + '?ip=' + router.query.ip} _hover={{ textDecor: 'none' }}>
+						<Link
+							href={
+								'/control' +
+								(router.query.ip == undefined
+									? ''
+									: '?ip=' + router.query.ip)
+							}
+							_hover={{ textDecor: 'none' }}>
 							<Text className={page == 1 ? 'active' : ''}>
 								Control
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href={'/weather' + '?ip=' + router.query.ip}>
+						<Link
+							href={
+								'/weather' +
+								(router.query.ip == undefined
+									? ''
+									: '?ip=' + router.query.ip)
+							}>
 							<Icon
 								as={FiCloud}
 								fontSize='2xl'
 								className={page == 2 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link href={'/weather' + '?ip=' + router.query.ip} _hover={{ textDecor: 'none' }}>
+						<Link
+							href={
+								'/weather' +
+								(router.query.ip == undefined
+									? ''
+									: '?ip=' + router.query.ip)
+							}
+							_hover={{ textDecor: 'none' }}>
 							<Text className={page == 2 ? 'active' : ''}>
 								Weather
 							</Text>
@@ -90,9 +140,50 @@ function Sidebar() {
 			</Flex>
 
 			<Flex flexDir='column' alignItems='center' mb={10} mt={5}>
-				<Icon as={FiSettings} my={2} fontSize='3xl' />
-				<Text textAlign='center'>Settings</Text>
+				<Link>
+					<Icon
+						as={FiSettings}
+						onClick={onOpen}
+						my={2}
+						fontSize='3xl'
+					/>
+				</Link>
+				<Link>
+					<Text textAlign='center'>Bind IP</Text>
+				</Link>
 			</Flex>
+
+			<Modal isOpen={isOpen} onClose={onClose}>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>
+						Type the IP address of your ESP8266
+					</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<Input
+							placeholder='Format like 192.168.137.129'
+							value={ipValue}
+							onChange={handleChange}></Input>
+					</ModalBody>
+
+					<ModalFooter>
+						<Button
+							colorScheme='blue'
+							mr={3}
+							onClick={() => {
+								onClose()
+								window.location.href =
+									window.location.origin +
+									window.location.pathname +
+									'?ip=' +
+									ipValue
+							}}>
+							Bind
+						</Button>
+					</ModalFooter>
+				</ModalContent>
+			</Modal>
 		</Flex>
 	)
 }

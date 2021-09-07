@@ -1,12 +1,9 @@
 import {
 	Flex,
-	Text,
 	Heading,
 	Stat,
 	StatLabel,
 	StatNumber,
-	StatHelpText,
-	StatArrow,
 	StatGroup,
 	Slider,
 	SliderTrack,
@@ -17,26 +14,52 @@ import {
 } from '@chakra-ui/react'
 import Switch from 'react-switch'
 import React, { useState, useEffect } from 'react'
-import { FiCheckCircle, FiSun } from 'react-icons/fi'
+import { FiCheckCircle, FiSun, FiXCircle } from 'react-icons/fi'
+
+let requestLock = true
 
 async function setLedRequest(ledOn, ip, callback) {
-	const res = await fetch(
-		'http://' + ip + '/setLed?status=' + (ledOn ? 'ON' : 'OFF'),
-		{
-			method: 'GET',
-			mode: 'cors',
-		}
-	)
-	console.log(res)
-	callback()
+	console.log(requestLock)
+	if (requestLock) {
+		requestLock = false
+		await fetch(
+			'http://' + ip + '/setLed?status=' + (ledOn ? 'ON' : 'OFF'),
+			{
+				method: 'GET',
+				mode: 'cors',
+			}
+		)
+			.then((res) => {
+				requestLock = true
+				callback()
+			})
+			.catch((error) => {
+				console.log(error)
+				requestLock = true
+				alert('Request failed, please check your ESP8266 connection.')
+			})
+	}
 }
 
 async function setBrightnessRequest(value, ip, callback) {
-	await fetch('http://' + ip + '/adjustLed?brightness=' + value, {
-		method: 'GET',
-		mode: 'cors',
-	})
-	callback()
+	if (requestLock) {
+		requestLock = false
+		console.log(requestLock)
+		await fetch('http://' + ip + '/adjustLed?brightness=' + value, {
+			method: 'GET',
+			mode: 'cors',
+		})
+			.then((res) => {
+				requestLock = true
+				callback()
+			})
+			.catch((error) => {
+				console.log(error)
+				console.log(requestLock)
+				requestLock = true
+				alert('Request failed, please check your ESP8266 connection.')
+			})
+	}
 }
 
 export default function ControlPanel() {
@@ -46,19 +69,35 @@ export default function ControlPanel() {
 	useEffect(async () => {
 		const params = new URLSearchParams(window.location.search)
 		let ip = params.get('ip')
-		setIp(ip)
-		const res = await fetch('http://' + ip + '/ledStatus', {
-			method: 'GET',
-			mode: 'cors',
-		})
-		const txt = await res.text()
-		setLedStatus({ l: true, s: txt })
-		console.log(txt)
+		if (ip != undefined) {
+			setIp(ip)
+			requestLock = false
+			await fetch('http://' + ip + '/ledStatus', {
+				method: 'GET',
+				mode: 'cors',
+			})
+				.then((res) => {
+					return res.text()
+				})
+				.then((txt) => {
+					requestLock = true
+					setLedStatus({ l: true, s: txt })
+				})
+				.catch((error) => {
+					console.log(error)
+					requestLock = true
+					alert(
+						'Request failed, please check your ESP8266 connection.'
+					)
+				})
+		} else {
+			alert('IP is not bound.')
+		}
 	}, [])
 	return (
 		<>
 			<Heading fontWeight='bold' mb={4} letterSpacing='tight'>
-				Set up your ESP8266.
+				Configure your ESP8266.
 			</Heading>
 			<Flex flexDir='column' pr={2} mt={8}>
 				<Heading as='h2' size='lg' letterSpacing='tight'>
@@ -70,18 +109,27 @@ export default function ControlPanel() {
 							Status
 						</StatLabel>
 						<Flex alignItems='center'>
-							<Icon
-								fontSize='2xl'
-								color='green.400'
-								as={FiCheckCircle}
-							/>
+							{ledStatus.s == 'ON' ? (
+								<Icon
+									fontSize='2xl'
+									color='green.400'
+									as={FiCheckCircle}
+								/>
+							) : (
+								<Icon
+									fontSize='2xl'
+									color='red.400'
+									as={FiXCircle}
+								/>
+							)}
 							<StatNumber ml={4} fontSize='4xl'>
-								ON
+								{ledStatus.s}
 							</StatNumber>
 						</Flex>
 						<Switch
 							checkedIcon={false}
 							uncheckedIcon={false}
+							disabled={ip == ''}
 							checked={ledStatus.s == 'ON'}
 							onChange={(checked) => {
 								setLedRequest(checked, ip, () => {
@@ -97,11 +145,17 @@ export default function ControlPanel() {
 						<StatLabel fontSize='sm' color='gray'>
 							Brightness
 						</StatLabel>
-						<StatNumber fontSize='2xl'>{brightness.b}</StatNumber>
+						<StatNumber fontSize='2xl'>
+							{ledStatus.s == 'ON' ? brightness.b : 'N/A'}
+						</StatNumber>
 						<Slider
 							aria-label='slider'
 							mt={2}
-							isDisabled={false}
+							isDisabled={
+								ip == '' ||
+								ledStatus.s == 'OFF' ||
+								ledStatus.l == false
+							}
 							defaultValue={100}
 							min={0}
 							max={255}

@@ -4,7 +4,7 @@ import React from 'react'
 export default function Weather() {
 	return (
 		<>
-			<Heading></Heading>
+			<Heading>Check out current weather.</Heading>
 		</>
 	)
 }

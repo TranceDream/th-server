@@ -13,7 +13,18 @@ import {
 	Td,
 	AspectRatio,
 	Divider,
+	Popover,
+	PopoverTrigger,
+	PopoverContent,
+	PopoverHeader,
+	PopoverBody,
+	PopoverFooter,
+	PopoverArrow,
+	PopoverCloseButton,
+	useToast,
 } from '@chakra-ui/react'
+import DayPicker from 'react-day-picker'
+import 'react-day-picker/lib/style.css'
 import { FiCalendar } from 'react-icons/fi'
 import { withRouter } from 'next/router'
 import TChart from '@/components/TChart'
@@ -21,30 +32,39 @@ import HChart from '@/components/HChart'
 
 function Home() {
 	const [currentTH, setCurrentTH] = useState({ l: false, t: null, h: null })
-	const [dateTH, setDateTH] = useState({ l: false, thdata: {data: []} })
+	const [dateTH, setDateTH] = useState({ l: false, thdata: { data: [] } })
 	const [tdata, setTdata] = useState([])
 	const [hdata, setHdata] = useState([])
+	const [selectedDate, setSelectedDate] = useState(new Date())
 
-	const [selectedDate, setSelectedDate] = useState({ d: new Date() })
-
-	useEffect( async () => {
+	useEffect(async () => {
 		const params = new URLSearchParams(window.location.search)
 		let ip = params.get('ip')
-		fetch('http://' + ip + '/getTH', {
-			method: 'GET',
-			mode: 'cors',
-		})
-			.then((value) => {
-				console.log(value)
-				return value.json()
+		if (ip != undefined) {
+			fetch('http://' + ip + '/getTH', {
+				method: 'GET',
+				mode: 'cors',
 			})
-			.then((value) => {
-				setCurrentTH({
-					l: true,
-					t: value.temperature,
-					h: value.humidity,
+				.then((value) => {
+					console.log(value)
+					return value.json()
 				})
-			})
+				.then((value) => {
+					setCurrentTH({
+						l: true,
+						t: value.temperature,
+						h: value.humidity,
+					})
+				})
+				.catch((error) => {
+					console.log(error)
+					alert(
+						'Request failed, please check your ESP8266 connection.'
+					)
+				})
+		} else {
+			alert('IP is not bound.')
+		}
 		fetch('https://th-server-backend-tranced.vercel.app/api/date', {
 			method: 'POST',
 			headers: {
@@ -52,7 +72,13 @@ function Home() {
 					'application/x-www-form-urlencoded;charset=UTF-8',
 			},
 			body: new URLSearchParams({
-				date: new Date('2021/9/4'),
+				date: new Date(
+					new Date().getFullYear() +
+						'/' +
+						(new Date().getMonth() + 1) +
+						'/' +
+						new Date().getDate()
+				),
 			}),
 		})
 			.then((res) => {
@@ -79,6 +105,9 @@ function Home() {
 				})
 				setTdata(tempT)
 				setHdata(tempH)
+			})
+			.catch((error) => {
+				alert('Request failed, please check your network connection.')
 			})
 	}, [])
 
@@ -116,10 +145,90 @@ function Home() {
 						Overview
 					</Heading>
 					<Text fontSize='small' color='gray' ml={4}>
-						2021/9/4
+						{selectedDate == null
+							? new Date().getFullYear() +
+							  '/' +
+							  (new Date().getMonth() + 1) +
+							  '/' +
+							  new Date().getDate()
+							: selectedDate.getFullYear() +
+							  '/' +
+							  (selectedDate.getMonth() + 1) +
+							  '/' +
+							  selectedDate.getDate()}
 					</Text>
 				</Flex>
-				<IconButton icon={<FiCalendar />} />
+				<Popover>
+					<PopoverTrigger>
+						<IconButton icon={<FiCalendar />} />
+					</PopoverTrigger>
+					<PopoverContent>
+						<PopoverArrow />
+						<PopoverCloseButton />
+						<PopoverBody>
+							<DayPicker
+								onDayClick={(day) => {
+									setSelectedDate(
+										new Date(
+											day.getFullYear() +
+												'/' +
+												(day.getMonth() + 1) +
+												'/' +
+												day.getDate()
+										)
+									)
+									setDateTH({ l: false, thdata: {} })
+									fetch(
+										'https://th-server-backend-tranced.vercel.app/api/date',
+										{
+											method: 'POST',
+											headers: {
+												'Content-Type':
+													'application/x-www-form-urlencoded;charset=UTF-8',
+											},
+											body: new URLSearchParams({
+												date: day,
+											}),
+										}
+									)
+										.then((res) => {
+											return res.json()
+										})
+										.then((value) => {
+											setDateTH({
+												l: true,
+												thdata: value,
+											})
+											const tempT = []
+											const tempH = []
+											value.data.map((element) => {
+												const elementDate = new Date(
+													element.date
+												)
+												const str =
+													'' +
+													elementDate.getHours() +
+													':' +
+													elementDate.getMinutes() +
+													':' +
+													elementDate.getSeconds()
+												tempT.push({
+													x: str,
+													y: element.temperature,
+												})
+												tempH.push({
+													x: str,
+													y: element.humidity,
+												})
+											})
+											setTdata(tempT)
+											setHdata(tempH)
+										})
+								}}
+							/>
+						</PopoverBody>
+					</PopoverContent>
+				</Popover>
 			</Flex>
 
 			<Flex flexDir='row' maxW='100%'>
