@@ -1,31 +1,14 @@
 import React from 'react'
 import { useRouter } from 'next/router'
 import { Flex, Heading, Text, Icon, Link } from '@chakra-ui/react'
-import {
-	FiHome,
-	FiPieChart,
-	FiDollarSign,
-	FiBox,
-	FiCalendar,
-	FiChevronDown,
-	FiChevronUp,
-	FiPlus,
-	FiThermometer,
-	FiDropLet,
-	FiCreditCard,
-	FiSearch,
-	FiBell,
-	FiDroplet,
-	FiActivity,
-	FiSettings,
-} from 'react-icons/fi'
+import { FiHome, FiSettings, FiSliders, FiCloud } from 'react-icons/fi'
 
 function getCurrentPage(pathname) {
 	switch (pathname) {
 		case '/':
 			return 0
 			break
-		case '/temperature':
+		case '/control':
 			return 1
 			break
 		case '/humidity':
@@ -60,61 +43,46 @@ function Sidebar() {
 					align='flex-start'
 					justifyContent='center'>
 					<Flex className='sidebar-items'>
-						<Link href='C:/Users/tranced/Resources/selab/th-server/frontend/out/'>
+						<Link href={'/' + '?ip=' + router.query.ip}>
 							<Icon
 								as={FiHome}
 								fontSize='2xl'
 								className={page == 0 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link href='/' _hover={{ textDecor: 'none' }}>
+						<Link
+							href={'/' + '?ip=' + router.query.ip}
+							_hover={{ textDecor: 'none' }}>
 							<Text className={page == 0 ? 'active' : ''}>
 								Home
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href='/temperature'>
+						<Link href={'/control' + '?ip=' + router.query.ip}>
 							<Icon
-								as={FiThermometer}
+								as={FiSliders}
 								fontSize='2xl'
 								className={page == 1 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link
-							href='/temperature'
-							_hover={{ textDecor: 'none' }}>
+						<Link href={'/control' + '?ip=' + router.query.ip} _hover={{ textDecor: 'none' }}>
 							<Text className={page == 1 ? 'active' : ''}>
-								Temperature
+								Control
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
-						<Link href='/humidity'>
+						<Link href={'/weather' + '?ip=' + router.query.ip}>
 							<Icon
-								as={FiDroplet}
+								as={FiCloud}
 								fontSize='2xl'
 								className={page == 2 ? 'active-icon' : ''}
 							/>
 						</Link>
-						<Link href='/humidity' _hover={{ textDecor: 'none' }}>
+						<Link href={'/weather' + '?ip=' + router.query.ip} _hover={{ textDecor: 'none' }}>
 							<Text className={page == 2 ? 'active' : ''}>
-								Humidity
-							</Text>
-						</Link>
-					</Flex>
-					<Flex className='sidebar-items'>
-						<Link>
-							<Icon
-								as={FiActivity}
-								fontSize='2xl'
-								className={page == 3 ? 'active-icon' : ''}
-							/>
-						</Link>
-						<Link _hover={{ textDecor: 'none' }}>
-							{/* TODO */}
-							<Text className={page == 3 ? 'active' : ''}>
-								TODO
+								Weather
 							</Text>
 						</Link>
 					</Flex>

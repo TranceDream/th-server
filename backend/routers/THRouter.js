@@ -6,6 +6,7 @@ const router = new Router({
 })
 
 router.get('/all', THController.getAll)
+router.post('/date', THController.getDataByDate)
 router.get('/latest', THController.getLatest)
 router.post('/insert', THController.insertData)
 
