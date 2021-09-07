@@ -151,10 +151,11 @@
 <body>
     <div id="loginbox">
     <h2>LOGIN</h2>
-    <div id="dv">
-        <span id="ssid">ssid</span>
-    </div>
-   <form action="/getPWD">
+   <form action="/connect">
+    <div class="item">
+            <input name="ssid" type="text" required />
+            <label for="">SSID</label>
+        </div>
     <div class="item">
             <input name="pwd" type="password" required>
             <label for="">Password</label>
@@ -167,23 +168,6 @@
         </button>
     </form>
     </div>
-    <script type="text/javascript">
-      /*  window.onload = function(){
-        let url = "/getSSID";
-        let opt={method:"GET"};
-        fetch(url,opt).then(res=>{
-            res.text().then(data=>{
-                document.getElementById("ssid").innerHTML=data;
-            });
-        });
-    }*/
-     window.onload = function(){
-            var loc = location.href;
-             var n1 = loc.length;//地址的总长度
-            var n2 = loc.indexOf("=");//取得=号的位置
-            var id = decodeURI(loc.substr(n2+1, n1-n2));
-            document.getElementById("ssid").innerHTML = id;
-        }
-    </script>
+ 
 </body>
 </html>

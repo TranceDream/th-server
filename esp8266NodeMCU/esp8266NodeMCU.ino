@@ -1,12 +1,12 @@
 //一下为该项目需要引入的函数库
-#include <ESP8266WiFi.h>
-#include <Wire.h>
+//#include <ESP8266WiFi.h>
+//#include <Wire.h>
 #include <ESP8266WebServer.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <ESP8266HTTPClient.h>
+//#include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
-#include <FS.h>
+//#include <FS.h>
 #include "temphumi.h"
 #include "font.h"
 #include "LED.h"
@@ -23,11 +23,11 @@ String wifissid;
 String wifipwd;
 unsigned long previousMillis = 0;
 unsigned long WiFiPrevious = 0;
-unsigned long WiFiInterval = 1000*10;
-unsigned long interval = 1000*60*30;
+unsigned long WiFiInterval = 1000*3;
+unsigned long interval = 1000*10;
 bool first = true;
-bool WiFiFlag = true;
-bool WiFifirst = true;
+bool WiFiFlag = false;
+bool ledflag = false;
 const String TimeUrl = "http://quan.suning.com/getSysTime.do";
 const char* host = "api.seniverse.com";     // 将要连接的心知天气地址 
 const int httpPort = 80;                    // 将要连接的服务器端口     
@@ -54,6 +54,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //定义服务器 端口号80
 ESP8266WebServer server(80);
+
+WiFiServerSecure httpsserver(443);
 temphumi TH; //温湿度对象
 LED led;  //LED对象
 
@@ -71,7 +73,8 @@ void initWiFi(){
 //连接WIFI
 void connectWiFi(){
   WiFi.mode(WIFI_STA);
-  WiFi.begin(server.arg("ssid").c_str(),server.arg("pwd").c_str());
+  //WiFi.begin(server.arg("ssid").c_str(),server.arg("pwd").c_str());
+  WiFi.begin("kumangcao","dyh123456");
   Serial.print("Connecting to ");
   int i=0;
   while(WiFi.status()!= WL_CONNECTED){
@@ -88,8 +91,9 @@ void connectWiFi(){
   Serial.println("Connected to "+WiFi.SSID());
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
-  WiFiFlag = false;
+  WiFiFlag = true;
   TH.th_setup();
+ 
 }
 
 //启动服务器
@@ -98,7 +102,13 @@ void setupServer(){
   server.on("/setLed",setLed); //开关LED
   server.on("/adjustLed",adjustLed);//调节LED亮度
   server.on("/getWeather",getWeather);//返回天气信息
-  server.on("/",connectWiFi);  //获取网络列表
+  server.on("/",connectWiFi);  //获取网络
+  server.on("/getip",getip);
+  server.on("/ledStatus",ledStatus);
+  server.on("/switchPic1",pic1);
+  server.on("/switchPic2",pic2);
+  server.on("/switchPic3",pic3);
+ // server.on("/connect",connectWiFi);
   //server.on("/wifi",towifiApi);  //选择SSID
   //server.on("/getWiFiList",getWiFi);  //扫描并发送SSID
   //server.on("/getPWD",getPWD); //获取密码
@@ -110,47 +120,39 @@ void setupServer(){
   }
 }
 
-//后端获取ssid
-/*void towifiApi(){
-  Serial.println("get HERE!!!!");
-  wifissid = server.arg("ssid");
-  server.send(200,"text/plain","OK");
+void pic1(){
+  display.clearDisplay();
+  display.drawBitmap(32,0,girl1,42,64,1);
+  display.display();
+  server.send(200,"text/plain","girl1");
 }
 
-//扫描Wifi
-void getWiFi(){
-  WiFi.scanNetworks(true);
-  delay(3000);
-  int n = WiFi.scanComplete();  
-  DynamicJsonDocument doc(512);
-  for(int i = 0;i<n;i++){
-    doc[WiFi.SSID(i)] = WiFi.SSID(i);
+void pic2(){
+   display.clearDisplay();
+  display.drawBitmap(32,0,girl2,57,64,1);
+  display.display();
+  server.send(200,"text/plain","girl2");
+}
+
+
+void pic3(){
+   display.clearDisplay();
+  display.drawBitmap(22,0,huiyuanai,85,64,1);
+  display.display();
+  server.send(200,"text/plain","huiyuanai");
+}
+
+void getip(){
+  Serial.println("here!!!");
+  String url = "/connect.html";
+  String contentType = getContentType(url);
+  if(SPIFFS.exists(url)){
+    File file = SPIFFS.open(url,"r");
+    server.streamFile(file,contentType);
+    Serial.println("ip done!!!");
+    file.close();
   }
-  String wifiJson;
-  serializeJson(doc,wifiJson);
-  server.send(200,"application/json",wifiJson);
 }
-
-//后端获取密码
-void getPWD(){
-  wifipwd = server.arg("pwd");
-  Serial.println(wifipwd);
-  connectWiFi(wifissid.c_str(),wifipwd.c_str());
-}
-
-void handleRequest(){
-
-  //获取资源url
-  String url = server.uri();
-  Serial.print("Requesting: ");
-  Serial.println(url);
-
-  //处理资源文件
-  bool fileExit = handleFile(url);
-  if(!fileExit){
-    server.send(404,"text/plain","404 NOT FOUND!!!");
-  }
-}*/
 
 //处理资源文件
 bool handleFile(String url){
@@ -197,16 +199,42 @@ void getTH(){
   doc["time"] = t;
   String THjson;
   serializeJson(doc,THjson);
+  server.sendHeader("Access-Control-Allow-Origin","*");
   server.send(200,"application/json",THjson);
+  /*std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+  client->setInsecure();
+  https.begin(*client,"");
+    https.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    int httpCode = https.POST("temperature=" + (String)temperature +  "&humidity=" + (String)humidity);*/
 }
 
 void setLed(){
-  led.handleLED();
+  Serial.println("set LED!!!");
+  String sta = server.arg("status");
+  Serial.println(sta);
+  server.sendHeader("Access-Control-Allow-Origin","*");
+  if(led.handleLED(sta)){
+    ledflag = true;
+    server.send(200,"text/plain","ON");
+  }else{
+    ledflag = false;
+    server.send(200,"text/plain","OFF");
+  }
 }
 
 void adjustLed(){
   int brightness = server.arg("brightness").toInt();
+  server.sendHeader("Access-Control-Allow-Origin","*");
   led.adjustLed(brightness);
+  ledflag = true;
+  server.send(200,"text/plain","heihei");
+}
+
+void ledStatus(){
+  Serial.println("ledStatus!!!");
+  server.sendHeader("Access-Control-Allow-Origin","*");
+  if(ledflag) server.send(200,"text/plain","ON");
+  else {server.send(200,"text/plain","OFF");}
 }
 
 void getWeather(){
@@ -322,6 +350,7 @@ void drawWeather(int temperature,String weather){
   else if(weather.equals("Clear")) {display.drawBitmap(30,10,epd_bitmap_clear,20,20,1);}
   else if(weather.equals("Cloudy")) display.drawBitmap(30,10,epd_bitmap_cloudy,20,19,1);
   else if(weather.equals("Overcast")) display.drawBitmap(30,10,epd_bitmap_overcast,20,20,1);
+  else if(weather.equals("Light rain")||weather.equals("Medorate rain")||weather.equals("Heavy rain")) display.drawBitmap(30,10,epd_bitmap_rainy,20,20,1);
   display.setCursor(35,35);
   display.print(weather);
   display.setTextSize(2.5);
@@ -331,22 +360,13 @@ void drawWeather(int temperature,String weather){
   display.display();
 }
 
-void checkWiFi(){
-  if(WiFiFlag) return;
-  //Serial.println("dd");
-  if(millis()-WiFiPrevious>=WiFiInterval){
-    WiFiPrevious = millis();
-    if(WiFi.status()!=WL_CONNECTED){
-      WiFiFlag=true;initWiFi();
-    }
-  }
-}
-
 void draw(){
-  if(WiFiFlag) return;
+  if(WiFiFlag){
   if((millis()-previousMillis>=interval)||first){
+    previousMillis = millis();
     first = false;
     weatherRequest(RoughHttp);
+  }
   }
 }
 
@@ -354,16 +374,17 @@ void setup(void){
   Serial.begin(9600);
   Serial.println("");
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // 初始化OLED并设置其IIC地址为 0x3C
-  initWiFi();
+  connectWiFi();
   setupServer();
   led.LED_setup();
+  draw();
 }
 
 void loop(){
   server.handleClient();
-  if(WiFiFlag==false)TH.check_time();
-  checkWiFi();
-  draw();
+  TH.check_time();
+  ESP.wdtFeed();
+ // httpsHandle();
 }
 
 // 获取文件类型
