@@ -3,88 +3,7 @@
 <head>
         
         <meta charset="UTF-8">
-        <title>WiFi获取</title>
-        <script type=“text/javascript” src="/jquery-3.6.0.min.js"></script>
-        <style>
-                #mainbox{
-                    width: 400px;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.5);
-                        box-shadow: 0px 15px 25px 0 rgba(0,0,0,0.6);
-                        padding: 40px;
-                        box-sizing: border-box;
-                        text-align: center;
-                        position:absolute;
-                }
-        
-                #wifiBox{
-                        
-                        text-align: center;
-                }
-        
-                button{
-                    background:transparent;
-                    border:none;
-                    outline: none;
-        
-                }
-        
-                #getSSID:hover{
-                        background: #03e9f4;
-                        border-radius: 5px;
-                        color: #fff;
-                        box-shadow: 0 0 5px #03e9f4,
-                                    0 0 25px #03e9f4,
-                                    0 0 50px #03e9f4,
-                                    0 0 100px #03e9f4;
-                    }
-        
-                #getSSID{
-                        padding: 30px 60px;
-                        text-align: center;
-                        color:#03e9f4;
-                        overflow: hidden;
-                        text-transform: uppercase;
-                        vertical-align: center;
-                        font-size: 30px;
-                }
-        
-                .btn{
-                    padding: 20px 150px;
-                        margin-top:30px;
-                        color:#03e9f4;
-                        position:relative;
-                        overflow: hidden;
-                        text-transform: uppercase;
-                        font-size: 15px;
-                }
-        
-                #list{
-                    list-style: none;
-                    padding: 0;
-                    margin: 0;
-                }
-        
-                li{
-                    height: 60px;
-                }
-
-                div#WiFiList {
-             display: flex;
-            justify-content: center;
-        }
-        
-                body{
-                    height:100vh;
-                        /*background: linear-gradient(#141e30,#243b55);*/
-                        background-image: linear-gradient(to top right,rgba(0, 0, 0, 0.753),rgb(5, 5, 17));
-                        display: flex;
-                        justify-content: center;
-                        /*align-items: center;*/
-                        font-size:16px;
-                        color:#03e9f4;
-                }
-            </style>
+        <title>IP发送</title>
     
 </head>
 <body>
@@ -98,35 +17,8 @@
     </div>
     </div>
     <script type="text/javascript">
-        function getWiFi(){
-            var lu = document.getElementById("list");
-           var nodes = lu.childNodes;
-           for(var i = nodes.length-1;i>=0;i--)
-                lu.removeChild(nodes[i]);
-            let url = "/getWiFiList";
-            let opt = {method:"GET"};
-            fetch(url, opt).then(res => {
-                        res.text().then(data=>{
-                            console.log(data);
-                            var obj = JSON.parse(data);
-                            for(key in obj){
-                                var liObj = document.createElement("li");
-                                var link = document.createElement("button");
-                                link.innerHTML = obj[key];
-                                link.className = "btn";
-                                link.onclick = function(){
-                                    var ssid = this.innerHTML;
-                                    let url2 = "/wifi?ssid="+this.innerHTML;
-                                    let opt2 = {method:"GET"};
-                                    fetch(url2,opt2).then(res=>{
-                                        location.href="/login.html?ssid="+encodeURI(ssid);
-                                    });
-                                };
-                                liObj.appendChild(link);
-                                lu.appendChild(liObj);
-                            }
-                        })
-                    });
+        window.onload = function(){
+            window.location.href="http://th-server.surge.sh/?ip="+encodeURI(window.location.host);
         }
     </script>
 </body>

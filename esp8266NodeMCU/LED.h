@@ -10,7 +10,7 @@ class LED{
     LED();
     ~LED();
     void LED_setup();
-    void handleLED();
+    bool handleLED(String sta);
     void adjustLed(int brightness);
     void handleBrightnessUp();
     void handleBrightnessDown();

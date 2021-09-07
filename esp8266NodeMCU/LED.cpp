@@ -13,12 +13,13 @@ void LED::LED_setup(){
   pinMode(LED_PIN,OUTPUT);
 }
 
-void LED::handleLED() {                          
-  if(digitalRead(LED_PIN)){
+bool LED::handleLED(String sta) {                          
+  if(sta.equals("OFF")){
     digitalWrite(LED_PIN,LOW);
-    val=100;
-  }else{
+    val=100;  return false;
+  }else if(sta.equals("ON")){
     analogWrite(LED_PIN,val);
+    return true;
   }
 }
 
