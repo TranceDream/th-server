@@ -168,6 +168,7 @@ boolean temphumi::fileflag(String str){
   }
 }
 
+
 void temphumi::addToDB(){
   boolean DBflag = true;
  // if(WiFi.status()!=WL_CONNECTED) connectWiFi();
