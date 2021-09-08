@@ -156,12 +156,11 @@ export default function Weather() {
 					Forecast
 				</Heading>
 				<Flex flexDir='row' maxW='2000px' mt={4}>
-					{console.log(forecastWeather.daily)}
 					{forecastWeather.daily == undefined ? (
 						<></>
 					) : (
-						forecastWeather.daily.map((element) => {
-							return <ForecastItem weather={element} />
+						forecastWeather.daily.map((element, index) => {
+							return <ForecastItem key={'weather-forecast-item-index' + index} weather={element} />
 						})
 					)}
 				</Flex>

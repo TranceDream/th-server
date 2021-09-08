@@ -174,13 +174,10 @@ function Home() {
 								onDayClick={(day) => {
 									setSelectedDate(
 										new Date(
-											day.getFullYear() +
-												'/' +
-												(day.getMonth() + 1) +
-												'/' +
-												day.getDate()
+											day.getTime() - 12 * 60 * 60 * 1000
 										)
 									)
+									console.log(day)
 									setDateTH({ l: false, thdata: {} })
 									fetch(
 										'https://th-server-backend-tranced.vercel.app/api/date',
@@ -191,7 +188,7 @@ function Home() {
 													'application/x-www-form-urlencoded;charset=UTF-8',
 											},
 											body: new URLSearchParams({
-												date: day,
+												date: new Date(day.getTime() - 12 * 60 * 60 * 1000),
 											}),
 										}
 									)
@@ -217,7 +214,16 @@ function Home() {
 													':' +
 													elementDate.getSeconds()
 												tempT.push({
-													x: str,
+													x: new Date(
+														selectedDate.getFullYear() +
+															'/' +
+															(selectedDate.getMonth() +
+																1) +
+															'/' +
+															selectedDate.getDate() +
+															' ' +
+															str
+													),
 													y: element.temperature,
 												})
 												tempH.push({
@@ -225,6 +231,7 @@ function Home() {
 													y: element.humidity,
 												})
 											})
+											console.log(tempT)
 											setTdata(tempT)
 											setHdata(tempH)
 										})

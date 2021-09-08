@@ -1472,6 +1472,11 @@ chart.js@^3.5.1:
   resolved "https://registry.nlark.com/chart.js/download/chart.js-3.5.1.tgz#73e24d23a4134a70ccdb5e79a917f156b6f3644a"
   integrity sha1-c+JNI6QTSnDM2155qRfxVrbzZEo=
 
+chartjs-adapter-moment@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.nlark.com/chartjs-adapter-moment/download/chartjs-adapter-moment-1.0.0.tgz#9174b1093c68bcfe285aff24f7388ad60d44e8f7"
+  integrity sha1-kXSxCTxovP4oWv8k9ziK1g1E6Pc=
+
 chokidar@3.5.1:
   version "3.5.1"
   resolved "https://registry.nlark.com/chokidar/download/chokidar-3.5.1.tgz#ee9ce7bbebd2b79f49f304799d5468e31e14e68a"
@@ -3095,6 +3100,11 @@ mkdirp@^0.5.1:
   integrity sha1-2Rzv1i0UNsoPQWIOJRKI1CAJne8=
   dependencies:
     minimist "^1.2.5"
+
+moment@^2.29.1:
+  version "2.29.1"
+  resolved "https://registry.npm.taobao.org/moment/download/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
+  integrity sha1-sr52n6MZQL6e7qZGnAdeNQBvo9M=
 
 ms@2.0.0:
   version "2.0.0"

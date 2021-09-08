@@ -3,6 +3,9 @@ const THData = require('../models/THData')
 class THController {
 	async getAll(ctx) {
 		const data = await THData.find()
+		data.sort((a, b) => {
+			return a.date.getTime() - b.date.getTime()
+		})
 		const result = {
 			code: 200,
 			data,
@@ -11,7 +14,9 @@ class THController {
 	}
 
 	async getDataByDate(ctx) {
-		var start = new Date(ctx.request.body.date)
+		var init = new Date(ctx.request.body.date)
+		var start = new Date()
+		start.setTime(init.getTime())
 		var end = new Date()
 		end.setTime(start.getTime() + 24 * 60 * 60 * 1000)
 		const data = await THData.find({
@@ -19,7 +24,8 @@ class THController {
 				$gte: start,
 				$lte: end,
 			},
-		})
+		}).sort({ date: 'asc' })
+		console.log(data)
 		const result = {
 			code: 200,
 			data,

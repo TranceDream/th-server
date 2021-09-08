@@ -1,5 +1,6 @@
 import React from 'react'
 import { Line } from 'react-chartjs-2'
+import 'chartjs-adapter-moment';
 
 const getData = (data) => {
 	return {
@@ -7,7 +8,6 @@ const getData = (data) => {
 			{
 				label: 'Temperature',
 				fill: false,
-				lineTension: 0.5,
 				backgroundColor: '#db86b2',
 				borderColor: '#B57295',
 				borderCapStyle: 'butt',
@@ -31,25 +31,30 @@ const getData = (data) => {
 const options = {
 	maintainAspectRatio: true,
 	scales: {
-		xAxes: [
-			{
-				type: 'time',
-				time: {
-					parser: 'HH:mm:ss',
-					unit: 'hour',
-					unitStepSize: 1
-				},
-				distribution: 'linear',
-				ticks: {
-					min: '00:00:00',
-					max: '23:59:59',
+		xAxes: {
+			type: 'time',
+			time: {
+				parser: 'HH:mm:ss',
+				tooltipFormat: 'HH:mm:ss',
+				unit: 'hour',
+				unitStepSize: 1,
+			},
+			distribution: 'linear',
+			ticks: {
+				min: '00:00:00',
+				max: '23:59:59',
+			},
+		},
+		yAxes: {
+			ticks: {
+				callback: (label, index, labels) => {
+					return label + '°C';
 				}
 			},
-		],
-		yAxes: {
 			grid: {
 				borderDash: [3, 3],
-			}, // this works
+			},
+			// beginAtZero: true,
 		},
 	},
 }
