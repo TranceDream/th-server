@@ -89,9 +89,11 @@ void temphumi::CheckCRC(){
 }
 
 void temphumi::write_file(String str){
-  String content = read_file();
-  File dataFile = SPIFFS.open(filename, "w");
-  dataFile.println(content + str);
+  //String content = read_file();
+  //File dataFile = SPIFFS.open(filename, "w");
+  //dataFile.println(content + str);
+  File dataFile = SPIFFS.open(filename, "a");
+  dataFile.println(str);
   dataFile.close();
 }
 
@@ -101,9 +103,11 @@ String temphumi::read_file(){
   if (dataFile)
   {
     //Serial.println("文件内容是：");
-    while (dataFile.available())
+    while (dataFile.available()){ 
+      ESP.wdtFeed();
       content = content + (char)dataFile.read();
     //Serial.println(content);
+    }
   }
   if(content.length() >= 480)
     content = content.substring(content.length()-461, content.length()-1);
