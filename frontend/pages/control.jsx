@@ -10,17 +10,23 @@ import {
 	SliderFilledTrack,
 	SliderThumb,
 	IconButton,
+	Text,
+	Link,
+	AspectRatio,
 	Icon,
+	SimpleGrid,
+	useToast,
 } from '@chakra-ui/react'
 import Switch from 'react-switch'
 import Head from 'next/head'
 import React, { useState, useEffect } from 'react'
 import { FiCheckCircle, FiSun, FiXCircle } from 'react-icons/fi'
+import OledCard from '@/components/OledCard'
+import nextConfig from '@/next.config'
 
 let requestLock = true
 
 async function setLedRequest(ledOn, ip, callback) {
-	console.log(requestLock)
 	if (requestLock) {
 		requestLock = false
 		await fetch(
@@ -35,9 +41,31 @@ async function setLedRequest(ledOn, ip, callback) {
 				callback()
 			})
 			.catch((error) => {
-				console.log(error)
+				if (error) console.log(error)
 				requestLock = true
 				alert('Request failed, please check your ESP8266 connection.')
+			})
+	}
+}
+
+async function setPic(value, ip) {
+	if (requestLock) {
+		requestLock = false
+		await fetch('http://' + ip + '/switchPic' + value, {
+			method: 'GET',
+			mode: 'cors',
+		})
+			.then((res) => {
+				requestLock = true
+			})
+			.catch((error) => {
+				console.log(error)
+				if (error != 'net::ERR_EMPTY_RESPONSE') {
+					alert(
+						'Request failed, please check your ESP8266 connection.'
+					)
+				}
+				requestLock = true
 			})
 	}
 }
@@ -45,7 +73,6 @@ async function setLedRequest(ledOn, ip, callback) {
 async function setBrightnessRequest(value, ip, callback) {
 	if (requestLock) {
 		requestLock = false
-		console.log(requestLock)
 		await fetch('http://' + ip + '/adjustLed?brightness=' + value, {
 			method: 'GET',
 			mode: 'cors',
@@ -56,9 +83,7 @@ async function setBrightnessRequest(value, ip, callback) {
 			})
 			.catch((error) => {
 				console.log(error)
-				console.log(requestLock)
 				requestLock = true
-				alert('Request failed, please check your ESP8266 connection.')
 			})
 	}
 }
@@ -168,11 +193,9 @@ export default function ControlPanel() {
 								setBrightness({ l: true, b: value })
 							}}
 							onChangeEnd={(value) => {
-								setBrightnessRequest(
-									value,
-									ip,
+								setBrightnessRequest(value, ip, () => {
 									setBrightness({ l: true, b: value })
-								)
+								})
 							}}>
 							<SliderTrack bg='#f5f5f5'>
 								<Flex position='relative' right={10} />
@@ -189,6 +212,47 @@ export default function ControlPanel() {
 				<Heading as='h2' size='lg' letterSpacing='tight'>
 					OLED Monitor Configuration
 				</Heading>
+				<SimpleGrid columns={3} spacing={10} mt={4}>
+					<Link
+						onClick={() => {
+							setPic(0, ip)
+						}}>
+						<AspectRatio ratio={4 / 3}>
+							<Flex
+								overflow='hidden'
+								borderRadius='lg'
+								borderWidth={2}>
+								<Text
+									fontSize='4xl'
+									fontWeight='bold'
+									letterSpacing='tight'>
+									Weather
+								</Text>
+							</Flex>
+						</AspectRatio>
+					</Link>
+					<OledCard
+						image='/pic2.jpg'
+						alt='pic1'
+						onClick={() => {
+							setPic(1, ip)
+						}}
+					/>
+					<OledCard
+						image='/pic1.jpg'
+						alt='pic2'
+						onClick={() => {
+							setPic(2, ip)
+						}}
+					/>
+					<OledCard
+						image='/pic3.jpg'
+						alt='pic3'
+						onClick={() => {
+							setPic(3, ip)
+						}}
+					/>
+				</SimpleGrid>
 			</Flex>
 		</>
 	)

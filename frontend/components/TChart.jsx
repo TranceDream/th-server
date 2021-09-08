@@ -41,7 +41,7 @@ const options = {
 			},
 			distribution: 'linear',
 			ticks: {
-				min: '00:00:00',
+				min: '00:00:00',   
 				max: '23:59:59',
 			},
 		},

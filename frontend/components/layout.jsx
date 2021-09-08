@@ -4,10 +4,10 @@ import Sidebar from '../components/Sidebar'
 
 export default function Layout({ children }) {
 	return (
-		<Flex h='100vh' flexDir='row' overflow='hidden' maxW='2000px'>
+		<Flex h='100vh' flexDir={['column', 'row', 'row']} overflow='hidden' maxW='2000px'>
 			{/* Column 1*/}
 			<Flex
-				w='15%'
+				w={'100%', '25%', '15%'}
 				flexDir='column'
 				align='center'
 				backgroundColor='#020202'
