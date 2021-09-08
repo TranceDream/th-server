@@ -25,12 +25,10 @@ function getCurrentPage(pathname) {
 			return 0
 		case '/control':
 			return 1
-		case '/humidity':
+		case '/weather':
 			return 2
-		case '/settings':
-			return 3
 		default:
-			return 4
+			return 0
 	}
 }
 
@@ -162,7 +160,7 @@ function Sidebar() {
 					<ModalCloseButton />
 					<ModalBody>
 						<Input
-							placeholder='Format like 192.168.137.129'
+							placeholder='Enter IP here.'
 							value={ipValue}
 							onChange={handleChange}></Input>
 					</ModalBody>

@@ -2,7 +2,7 @@ const Koa = require('koa')
 const mongoose = require('mongoose')
 const koaBody = require('koa-body')
 const bodyParser = require('koa-bodyparser')
-const router = require('../routers/THRouter')
+const router = require('../routers/router')
 const app = new Koa()
 mongoose
 	.connect(process.env.DB + '?retryWrites=true&w=majority', {

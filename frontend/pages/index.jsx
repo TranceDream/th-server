@@ -23,6 +23,7 @@ import {
 	PopoverCloseButton,
 	useToast,
 } from '@chakra-ui/react'
+import Head from 'next/head'
 import DayPicker from 'react-day-picker'
 import 'react-day-picker/lib/style.css'
 import { FiCalendar } from 'react-icons/fi'
@@ -113,6 +114,9 @@ function Home() {
 
 	return (
 		<>
+			<Head>
+				<title>TH Server | Home</title>
+			</Head>
 			<Heading fontWeight='bold' mb={4} letterSpacing='tight'>
 				Welcome back.
 			</Heading>

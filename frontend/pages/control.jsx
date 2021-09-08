@@ -13,6 +13,7 @@ import {
 	Icon,
 } from '@chakra-ui/react'
 import Switch from 'react-switch'
+import Head from 'next/head'
 import React, { useState, useEffect } from 'react'
 import { FiCheckCircle, FiSun, FiXCircle } from 'react-icons/fi'
 
@@ -96,6 +97,9 @@ export default function ControlPanel() {
 	}, [])
 	return (
 		<>
+			<Head>
+				<title>TH Server | Control</title>
+			</Head>
 			<Heading fontWeight='bold' mb={4} letterSpacing='tight'>
 				Configure your ESP8266.
 			</Heading>
