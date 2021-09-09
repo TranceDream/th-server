@@ -47,7 +47,6 @@ function Home() {
 				mode: 'cors',
 			})
 				.then((value) => {
-					console.log(value)
 					return value.json()
 				})
 				.then((value) => {
@@ -177,7 +176,6 @@ function Home() {
 											day.getTime() - 12 * 60 * 60 * 1000
 										)
 									)
-									console.log(day)
 									setDateTH({ l: false, thdata: {} })
 									fetch(
 										'https://th-server-backend-tranced.vercel.app/api/date',
@@ -231,7 +229,6 @@ function Home() {
 													y: element.humidity,
 												})
 											})
-											console.log(tempT)
 											setTdata(tempT)
 											setHdata(tempH)
 										})
@@ -266,7 +263,6 @@ function Home() {
 							</Tr>
 						</Thead>
 						<Tbody>
-							{console.log(dateTH)}
 							{dateTH.l ? (
 								dateTH.thdata.data.map((element) => {
 									const elementDate = new Date(element.date)

@@ -167,7 +167,6 @@ export default function ControlPanel() {
 										s: checked ? 'ON' : 'OFF',
 									})
 								})
-								console.log(checked)
 							}}></Switch>
 					</Stat>
 					<Stat>
