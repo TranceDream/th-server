@@ -73,8 +73,8 @@ void initWiFi(){
 //连接WIFI
 void connectWiFi(){
   WiFi.mode(WIFI_STA);
-  //WiFi.begin(server.arg("ssid").c_str(),server.arg("pwd").c_str());
-  WiFi.begin("kumangcao","dyh123456");
+  WiFi.begin(server.arg("ssid").c_str(),server.arg("pwd").c_str());
+  //WiFi.begin("kumangcao","dyh123456");
   Serial.print("Connecting to ");
   int i=0;
   while(WiFi.status()!= WL_CONNECTED){
@@ -93,7 +93,7 @@ void connectWiFi(){
   Serial.println(WiFi.localIP());
   WiFiFlag = true;
   TH.th_setup();
- 
+  draw();
 }
 
 //启动服务器
@@ -102,17 +102,15 @@ void setupServer(){
   server.on("/setLed",setLed); //开关LED
   server.on("/adjustLed",adjustLed);//调节LED亮度
   server.on("/getWeather",getWeather);//返回天气信息
-  server.on("/",connectWiFi);  //获取网络
+  //server.on("/",connectWiFi);  //获取网络
+  server.on("/connect",connectWiFi);
+  server.on("/",login);
   server.on("/getip",getip);
   server.on("/ledStatus",ledStatus);
   server.on("/switchPic1",pic1);
   server.on("/switchPic2",pic2);
   server.on("/switchPic3",pic3);
- // server.on("/connect",connectWiFi);
-  //server.on("/wifi",towifiApi);  //选择SSID
-  //server.on("/getWiFiList",getWiFi);  //扫描并发送SSID
-  //server.on("/getPWD",getPWD); //获取密码
-  //server.onNotFound(handleRequest); //响应用户信息
+  server.on("/switchPic0",draw2);
   server.begin(); 
   Serial.println("HTTP server started");
   if(SPIFFS.begin()){
@@ -120,10 +118,23 @@ void setupServer(){
   }
 }
 
+void login(){
+  String url = "/login.html";
+  String contentType = getContentType(url);
+  if(SPIFFS.exists(url)){
+    File file = SPIFFS.open(url,"r");
+    server.streamFile(file,contentType);
+    Serial.println("login done!!!");
+    file.close();
+  }
+}
+
+
 void pic1(){
   display.clearDisplay();
   display.drawBitmap(32,0,girl1,42,64,1);
   display.display();
+   server.sendHeader("Access-Control-Allow-Origin","*");
   server.send(200,"text/plain","girl1");
 }
 
@@ -131,6 +142,7 @@ void pic2(){
    display.clearDisplay();
   display.drawBitmap(32,0,girl2,57,64,1);
   display.display();
+   server.sendHeader("Access-Control-Allow-Origin","*");
   server.send(200,"text/plain","girl2");
 }
 
@@ -139,6 +151,7 @@ void pic3(){
    display.clearDisplay();
   display.drawBitmap(22,0,huiyuanai,85,64,1);
   display.display();
+   server.sendHeader("Access-Control-Allow-Origin","*");
   server.send(200,"text/plain","huiyuanai");
 }
 
@@ -154,22 +167,6 @@ void getip(){
   }
 }
 
-//处理资源文件
-bool handleFile(String url){
-  if(url.endsWith("/")){
-    url="/connect.html";
-  }
-
-  String contentType = getContentType(url);
-
-  if(SPIFFS.exists(url)){
-    File file = SPIFFS.open(url,"r");
-    server.streamFile(file,contentType);
-    file.close();
-    return true;
-  }
-  return false;
-}
 
 String getTime(){
   WiFiClient client;
@@ -361,33 +358,33 @@ void drawWeather(int temperature,String weather){
 }
 
 void draw(){
-  if(WiFiFlag){
-  if((millis()-previousMillis>=interval)||first){
-    previousMillis = millis();
-    first = false;
-    weatherRequest(RoughHttp);
-  }
-  }
+  weatherRequest(RoughHttp);
+}
+
+void draw2(){
+  weatherRequest(RoughHttp);
+   server.sendHeader("Access-Control-Allow-Origin","*");
+  server.send(200,"text/plain","weather");
 }
 
 void setup(void){
   Serial.begin(9600);
   Serial.println("");
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // 初始化OLED并设置其IIC地址为 0x3C
-  connectWiFi();
+  //connectWiFi();
+  initWiFi();
   setupServer();
   led.LED_setup();
-  draw();
+
 }
 
 void loop(){
   server.handleClient();
-  TH.check_time();
+  if(WiFiFlag)TH.check_time();
   ESP.wdtFeed();
  // httpsHandle();
 }
 
-// 获取文件类型
 String getContentType(String filename){
   if(filename.endsWith(".htm")) return "text/html";
   else if(filename.endsWith(".html")) return "text/html";
