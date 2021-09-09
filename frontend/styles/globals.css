@@ -28,6 +28,12 @@ a {
 	font-size: large;
 }
 
+@media only screen and (max-width: 767px) {
+	.sidebar-items {
+		margin-bottom: 0 !important;
+	}
+}
+
 .sidebar-items p {
 	margin-left: 1em;
 }

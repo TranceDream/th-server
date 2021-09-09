@@ -120,8 +120,8 @@ function Home() {
 			<Heading fontWeight='bold' mb={4} letterSpacing='tight'>
 				Welcome back.
 			</Heading>
-			<Flex flexDir='row' maxW='100%'>
-				<Flex flexDir='column' flex={1} mr={2}>
+			<Flex flexDir={['column', 'row', 'row', 'row', 'row']} maxW='100%'>
+				<Flex flexDir='column' flex={1} mr={[0, 2, 2, 2, 2]}>
 					<Text fontSize='sm' color='gray'>
 						Temperature
 					</Text>
@@ -131,7 +131,7 @@ function Home() {
 						</Text>
 					</Skeleton>
 				</Flex>
-				<Flex flexDir='column' flex={1} ml={2}>
+				<Flex flexDir='column' flex={1} ml={[0, 2, 2, 2, 2]}>
 					<Text fontSize='sm' color='gray'>
 						Humidity
 					</Text>
@@ -242,7 +242,7 @@ function Home() {
 				</Popover>
 			</Flex>
 
-			<Flex flexDir='row' maxW='100%'>
+			<Flex flexDir={['column', 'row', 'row', 'row', 'row']} maxW='100%'>
 				<Flex flexDir='column' flex={1} mr={2}>
 					<AspectRatio ratio={18 / 9}>
 						<TChart tdata={tdata} />

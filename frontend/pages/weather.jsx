@@ -80,7 +80,7 @@ export default function Weather() {
 						</Text>
 					</Flex>
 				</Skeleton>
-				<SimpleGrid columns={3} spacing={10} mt={4}>
+				<SimpleGrid columns={[2, 3, 3, 3, 3]} spacing={10} mt={4}>
 					<Flex flexDir='column'>
 						<Text fontSize='sm' color='gray'>
 							Feels like
@@ -155,15 +155,20 @@ export default function Weather() {
 				<Heading as='h2' size='lg' letterSpacing='tight' mt={8}>
 					Forecast
 				</Heading>
-				<Flex flexDir='row' maxW='2000px' mt={4}>
+				<SimpleGrid columns={[1, 1, 3, 3, 3]} mt={4}>
 					{forecastWeather.daily == undefined ? (
 						<></>
 					) : (
 						forecastWeather.daily.map((element, index) => {
-							return <ForecastItem key={'weather-forecast-item-index' + index} weather={element} />
+							return (
+								<ForecastItem
+									key={'weather-forecast-item-index' + index}
+									weather={element}
+								/>
+							)
 						})
 					)}
-				</Flex>
+				</SimpleGrid>
 			</Flex>
 		</>
 	)

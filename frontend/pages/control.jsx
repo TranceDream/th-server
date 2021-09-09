@@ -128,11 +128,11 @@ export default function ControlPanel() {
 			<Heading fontWeight='bold' mb={4} letterSpacing='tight'>
 				Configure your ESP8266.
 			</Heading>
-			<Flex flexDir='column' pr={2} mt={8}>
+			<Flex flexDir='column' pr={2} mt={[0, 0, 8, 8, 8]}>
 				<Heading as='h2' size='lg' letterSpacing='tight'>
 					LED Configuration
 				</Heading>
-				<StatGroup mt={4}>
+				<Flex flexDir={['column', 'column', 'row', 'row', 'row']} mt={4}>
 					<Stat>
 						<StatLabel fontSize='sm' color='gray'>
 							Status
@@ -206,13 +206,13 @@ export default function ControlPanel() {
 							</SliderThumb>
 						</Slider>
 					</Stat>
-				</StatGroup>
+				</Flex>
 			</Flex>
 			<Flex flexDir='column' mt={8}>
 				<Heading as='h2' size='lg' letterSpacing='tight'>
 					OLED Monitor Configuration
 				</Heading>
-				<SimpleGrid columns={3} spacing={10} mt={4}>
+				<SimpleGrid columns={[1, 2, 3, 4, 4]} spacing={10} mt={4}>
 					<Link
 						onClick={() => {
 							setPic(0, ip)
@@ -223,7 +223,7 @@ export default function ControlPanel() {
 								borderRadius='lg'
 								borderWidth={2}>
 								<Text
-									fontSize='4xl'
+									fontSize={['6xl', '5xl', '4xl', '4xl', '4xl']}
 									fontWeight='bold'
 									letterSpacing='tight'>
 									Weather

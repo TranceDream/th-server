@@ -39,22 +39,39 @@ function Sidebar() {
 	let router = useRouter()
 	let page = getCurrentPage(router.pathname)
 	return (
-		<Flex flexDir='column' justifyContent='space-between' h='100vh'>
+		<Flex
+			flexDir='column'
+			justifyContent='space-between'
+			h={[null, null, '100vh']}>
 			<Flex flexDir='column' as='nav'>
 				<Heading
 					mt={50}
-					mb={100}
-					fontSize='2xl'
+					mb={[15, 25, 100]}
+					textAlign='center'
+					fontSize={['4xl', '4xl', 'lg', '2xl', '2xl']}
 					alignSelf='center'
 					letterSpacing='tight'>
 					TH Server
 				</Heading>
 				<Flex
-					flexDir='column'
-					align='flex-start'
+					flexDir={['row', 'row', 'column', 'column', 'column']}
+					align={[
+						'center',
+						'center',
+						'center',
+						'flex-start',
+						'flex-start',
+					]}
 					justifyContent='center'>
 					<Flex className='sidebar-items'>
 						<Link
+							display={[
+								'center',
+								'center',
+								'center',
+								'flex-start',
+								'flex-start',
+							]}
 							href={
 								'/' +
 								(router.query.ip == undefined
@@ -62,6 +79,13 @@ function Sidebar() {
 									: '?ip=' + router.query.ip)
 							}>
 							<Icon
+								display={[
+									'none',
+									'none',
+									'flex',
+									'flex',
+									'flex',
+								]}
 								as={FiHome}
 								fontSize='2xl'
 								className={page == 0 ? 'active-icon' : ''}
@@ -75,13 +99,28 @@ function Sidebar() {
 									: '?ip=' + router.query.ip)
 							}
 							_hover={{ textDecor: 'none' }}>
-							<Text className={page == 0 ? 'active' : ''}>
+							<Text
+								display={[
+									'flex',
+									'flex',
+									'none',
+									'flex',
+									'flex',
+								]}
+								className={page == 0 ? 'active' : ''}>
 								Home
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
 						<Link
+							display={[
+								'center',
+								'center',
+								'center',
+								'flex-start',
+								'flex-start',
+							]}
 							href={
 								'/control' +
 								(router.query.ip == undefined
@@ -89,6 +128,13 @@ function Sidebar() {
 									: '?ip=' + router.query.ip)
 							}>
 							<Icon
+								display={[
+									'none',
+									'none',
+									'flex',
+									'flex',
+									'flex',
+								]}
 								as={FiSliders}
 								fontSize='2xl'
 								className={page == 1 ? 'active-icon' : ''}
@@ -102,13 +148,28 @@ function Sidebar() {
 									: '?ip=' + router.query.ip)
 							}
 							_hover={{ textDecor: 'none' }}>
-							<Text className={page == 1 ? 'active' : ''}>
+							<Text
+								display={[
+									'flex',
+									'flex',
+									'none',
+									'flex',
+									'flex',
+								]}
+								className={page == 1 ? 'active' : ''}>
 								Control
 							</Text>
 						</Link>
 					</Flex>
 					<Flex className='sidebar-items'>
 						<Link
+							display={[
+								'center',
+								'center',
+								'center',
+								'flex-start',
+								'flex-start',
+							]}
 							href={
 								'/weather' +
 								(router.query.ip == undefined
@@ -116,6 +177,13 @@ function Sidebar() {
 									: '?ip=' + router.query.ip)
 							}>
 							<Icon
+								display={[
+									'none',
+									'none',
+									'flex',
+									'flex',
+									'flex',
+								]}
 								as={FiCloud}
 								fontSize='2xl'
 								className={page == 2 ? 'active-icon' : ''}
@@ -129,7 +197,15 @@ function Sidebar() {
 									: '?ip=' + router.query.ip)
 							}
 							_hover={{ textDecor: 'none' }}>
-							<Text className={page == 2 ? 'active' : ''}>
+							<Text
+								display={[
+									'flex',
+									'flex',
+									'none',
+									'flex',
+									'flex',
+								]}
+								className={page == 2 ? 'active' : ''}>
 								Weather
 							</Text>
 						</Link>
@@ -137,17 +213,28 @@ function Sidebar() {
 				</Flex>
 			</Flex>
 
-			<Flex flexDir='column' alignItems='center' mb={10} mt={5}>
+			<Flex
+				flexDir={['row', 'row', 'column', 'column', 'column']}
+				justifyContent='center'
+				alignItems='center'
+				mb={[5, 5, 10, 10, 10]}
+				mt={[2, 5, 5, 5, 5]}>
 				<Link>
 					<Icon
+						mr={[1, 1, 0, 0, 0]}
 						as={FiSettings}
 						onClick={onOpen}
 						my={2}
-						fontSize='3xl'
+						fontSize={['xl', 'xl', '2xl', '3xl', '3xl']}
 					/>
 				</Link>
 				<Link>
-					<Text textAlign='center'>Bind IP</Text>
+					<Text
+						onClick={onOpen}
+						ml={[1, 1, 0, 0, 0]}
+						textAlign='center'>
+						Bind IP
+					</Text>
 				</Link>
 			</Flex>
 
