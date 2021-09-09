@@ -26,19 +26,7 @@ export default function Layout({ children }) {
 				p='3%'
 				flexDir='column'
 				overflow='auto'
-				minH='100vh'
-				sx={{
-					'&::-webkit-scrollbar': {
-						width: '8px',
-						borderRadius: '4px',
-						backgroundColor: '#f5f5f5',
-					},
-					'&::-webkit-scrollbar-thumb': {
-						backgroundColor: '#555555',
-						borderRadius: '4px',
-						cursor: 'pointer',
-					},
-				}}>
+				minH='100vh'>
 				{children}
 			</Flex>
 		</Flex>
